@@ -1,3 +1,11 @@
+export interface HomeStatItem {
+  id: string;
+  label: string;
+  value: string;
+  suffix?: string;
+  unit?: string;
+}
+
 export interface LibraryProfile {
   name: string;
   shortName: string;
@@ -16,6 +24,7 @@ export interface LibraryProfile {
     activeMembers: number;
     monthlyVisitors: number;
   };
+  homeStats?: HomeStatItem[];
   logoUrl?: string;
 }
 

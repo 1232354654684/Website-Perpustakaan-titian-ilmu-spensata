@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { BookOpen, Menu, X, Clock, ArrowRight, Shield } from 'lucide-react';
 import { useLibrary } from '../context/LibraryContext';
+import { getClosedDaysSummary } from '../lib/operatingHours';
 
 interface NavbarProps {
   activePage: string;
@@ -41,7 +42,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activePage, onNavigate }) => {
               <img
                 src={settings.logoUrl}
                 alt="Logo Perpustakaan Titian Ilmu"
-                className="w-10 h-10 rounded-xl object-contain shadow-xs transition-transform duration-200 group-hover:scale-105"
+                className="w-10 h-10 object-contain drop-shadow-xs transition-transform duration-200 group-hover:scale-105"
               />
             ) : (
               <div className="w-10 h-10 rounded-xl bg-[#1B4332] text-white flex items-center justify-center shadow-xs transition-transform duration-200 group-hover:scale-105">

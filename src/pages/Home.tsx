@@ -16,6 +16,8 @@ import {
 import { useLibrary } from '../context/LibraryContext';
 import { NewsItem } from '../types';
 import { VisualFallback } from '../components/VisualFallback';
+import { getOperatingHoursGeneralText } from '../lib/operatingHours';
+import { defaultHomeStats } from '../data/libraryData';
 
 interface HomeProps {
   onNavigate: (page: string, articleId?: string) => void;
@@ -25,12 +27,8 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
   const { settings, operatingHours, newsList, loading } = useLibrary();
   const latestNews = newsList.slice(0, 3);
 
-  const stats = [
-    { label: 'Total Koleksi Buku', value: settings.stats?.totalBooks ? `${settings.stats.totalBooks}+` : '8.450+', unit: 'Eksemplar' },
-    { label: 'Judul Bahan Pustaka', value: settings.stats?.totalTitles ? `${settings.stats.totalTitles}+` : '2.980+', unit: 'Judul' },
-    { label: 'Anggota Aktif', value: settings.stats?.activeMembers ? `${settings.stats.activeMembers}+` : '780+', unit: 'Siswa & Guru' },
-    { label: 'Status Akreditasi', value: settings.accreditation || '-', unit: 'Perpustakaan Sekolah' },
-  ];
+  // Statistik Beranda diambil langsung dari Pengaturan Umum Firestore
+  const homeStats = settings.homeStats !== undefined ? settings.homeStats : defaultHomeStats;
 
   const highlights = [
     {
@@ -140,7 +138,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                 Informasi Jam Layanan Pemustaka
               </h3>
               <p className="text-xs text-stone-500">
-                Buka setiap hari kerja (Senin–Jumat) untuk layanan sirkulasi dan baca. Sabtu & Minggu tutup.
+                {getOperatingHoursGeneralText(operatingHours)}
               </p>
             </div>
           </div>
@@ -245,24 +243,34 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
         </div>
       </section>
 
-      {/* Statistik Perpustakaan (Tabular Rigor) */}
-      <section className="bg-[#FAF8F5] border-y border-[#E6DFD3] py-12">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
-          {stats.map((s, idx) => (
-            <div key={idx} className="space-y-1">
-              <p className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#1B4332] tracking-tight tabular-nums">
-                {s.value}
-              </p>
-              <p className="text-xs uppercase tracking-wider font-semibold text-stone-700">
-                {s.label}
-              </p>
-              <p className="text-[11px] text-stone-500 font-sans">
-                {s.unit}
-              </p>
-            </div>
-          ))}
-        </div>
-      </section>
+      {/* Statistik Perpustakaan (Tabular Rigor) - Dinamis dari Pengaturan Umum & disembunyikan jika kosong */}
+      {homeStats && homeStats.length > 0 && (
+        <section className="bg-[#FAF8F5] border-y border-[#E6DFD3] py-12">
+          <div
+            className={`grid grid-cols-2 md:grid-cols-${Math.min(
+              homeStats.length,
+              4
+            )} gap-8 text-center max-w-6xl mx-auto px-4`}
+          >
+            {homeStats.map((s) => (
+              <div key={s.id} className="space-y-1">
+                <p className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#1B4332] tracking-tight tabular-nums">
+                  {s.value}
+                  {s.suffix || ''}
+                </p>
+                <p className="text-xs uppercase tracking-wider font-semibold text-stone-700">
+                  {s.label}
+                </p>
+                {s.unit && (
+                  <p className="text-[11px] text-stone-500 font-sans">
+                    {s.unit}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* 3 Berita & Kegiatan Terbaru */}
       <section className="space-y-8">

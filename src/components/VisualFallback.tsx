@@ -1,5 +1,7 @@
 import React from 'react';
 import { BookOpen, Users, Compass, Laptop, Award, ShieldCheck, Sparkles } from 'lucide-react';
+import { useLibrary } from '../context/LibraryContext';
+import { getOperatingHoursBadge } from '../lib/operatingHours';
 
 interface VisualFallbackProps {
   type: 'hero' | 'reading-club' | 'book-collection' | 'digital-library' | 'staff' | 'general';
@@ -14,6 +16,7 @@ export const VisualFallback: React.FC<VisualFallbackProps> = ({
   className = '',
   aspectRatio = 'video',
 }) => {
+  const { settings, operatingHours } = useLibrary();
   const aspectClass =
     aspectRatio === 'video'
       ? 'aspect-16/9'
@@ -24,6 +27,11 @@ export const VisualFallback: React.FC<VisualFallbackProps> = ({
       : '';
 
   if (type === 'hero') {
+    const homeStats = settings.homeStats || [];
+    const stat1 = homeStats[0] || { label: 'Koleksi Buku', value: '8.450', suffix: '+' };
+    const stat2 = homeStats[1] || { label: 'Anggota Aktif', value: '780', suffix: '+' };
+    const hoursBadge = getOperatingHoursBadge(operatingHours);
+
     return (
       <div
         className={`relative w-full min-h-[380px] sm:min-h-[420px] h-full overflow-hidden rounded-2xl bg-gradient-to-br from-[#1B4332] via-[#22573F] to-[#143527] text-white p-6 sm:p-8 lg:p-9 flex flex-col justify-between shadow-md ${className}`}
@@ -50,7 +58,7 @@ export const VisualFallback: React.FC<VisualFallbackProps> = ({
             Ruang Teduh untuk Menjelajah Dunia Lewat Buku
           </h2>
           <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed font-sans max-w-md">
-            Menyediakan lebih dari 8.000 bahan pustaka terkurasi, ruang baca berpenyejuk udara, otomasi katalog pencarian judul, serta selasar hijau ramah anak.
+            Menyediakan bahan pustaka terkurasi, ruang baca berpenyejuk udara, otomasi katalog pencarian judul, serta selasar hijau ramah anak.
           </p>
         </div>
 
@@ -58,19 +66,19 @@ export const VisualFallback: React.FC<VisualFallbackProps> = ({
         <div className="relative z-10 grid grid-cols-2 sm:grid-cols-3 gap-3 pt-4 border-t border-white/15 text-xs text-emerald-200/90">
           <div className="space-y-0.5">
             <span className="block font-bold text-white tabular-nums text-sm sm:text-base">
-              8.450+
+              {stat1.value}{stat1.suffix || ''}
             </span>
-            <span className="text-[11px] text-emerald-200/80">Koleksi Buku</span>
+            <span className="text-[11px] text-emerald-200/80">{stat1.label}</span>
           </div>
           <div className="space-y-0.5">
             <span className="block font-bold text-white tabular-nums text-sm sm:text-base">
-              780+
+              {stat2.value}{stat2.suffix || ''}
             </span>
-            <span className="text-[11px] text-emerald-200/80">Anggota Aktif</span>
+            <span className="text-[11px] text-emerald-200/80">{stat2.label}</span>
           </div>
           <div className="col-span-2 sm:col-span-1 space-y-0.5">
             <span className="block font-bold text-white text-sm sm:text-base">
-              Senin – Sabtu
+              {hoursBadge}
             </span>
             <span className="text-[11px] text-emerald-200/80">Jam Layanan</span>
           </div>

@@ -1,4 +1,35 @@
-import { ContactInfo, LibraryProfile, NewsItem, OperatingHours, SOPEntry, StaffMember } from '../types';
+import { ContactInfo, HomeStatItem, LibraryProfile, NewsItem, OperatingHours, SOPEntry, StaffMember } from '../types';
+
+export const defaultHomeStats: HomeStatItem[] = [
+  {
+    id: 'stat-books',
+    label: 'Total Koleksi Buku',
+    value: '8.450',
+    suffix: '+',
+    unit: 'Eksemplar',
+  },
+  {
+    id: 'stat-titles',
+    label: 'Judul Bahan Pustaka',
+    value: '2.980',
+    suffix: '+',
+    unit: 'Judul',
+  },
+  {
+    id: 'stat-members',
+    label: 'Anggota Aktif',
+    value: '780',
+    suffix: '+',
+    unit: 'Siswa & Guru',
+  },
+  {
+    id: 'stat-visitors',
+    label: 'Pengunjung Bulanan',
+    value: '1.420',
+    suffix: '+',
+    unit: 'Pemustaka',
+  },
+];
 
 export const libraryProfileData: LibraryProfile = {
   name: 'Perpustakaan Titian Ilmu',
@@ -31,6 +62,7 @@ export const libraryProfileData: LibraryProfile = {
     activeMembers: 780,
     monthlyVisitors: 1420
   },
+  homeStats: defaultHomeStats,
   logoUrl: ''
 };
 
