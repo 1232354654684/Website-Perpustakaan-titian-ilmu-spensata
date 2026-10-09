@@ -1,0 +1,138 @@
+import React, { useState } from 'react';
+import { BookOpen, Menu, X, Clock, ArrowRight } from 'lucide-react';
+
+interface NavbarProps {
+  activePage: string;
+  onNavigate: (page: string) => void;
+}
+
+export const Navbar: React.FC<NavbarProps> = ({ activePage, onNavigate }) => {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const navLinks = [
+    { id: 'beranda', label: 'Beranda' },
+    { id: 'profil', label: 'Profil' },
+    { id: 'berita', label: 'Berita' },
+    { id: 'sop', label: 'SOP Pelayanan' },
+    { id: 'struktur', label: 'Struktur Organisasi' },
+    { id: 'kontak', label: 'Kontak' },
+  ];
+
+  const handleNavClick = (pageId: string) => {
+    onNavigate(pageId);
+    setMobileMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  return (
+    <header className="sticky top-0 z-50 bg-[#FAF8F5]/95 backdrop-blur-md border-b border-[#E6DFD3] transition-colors">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-20 gap-8">
+          {/* Zone 1: Brand Wordmark (Single line, display face) */}
+          <button
+            onClick={() => handleNavClick('beranda')}
+            className="flex items-center gap-3 text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332] rounded-lg p-1 shrink-0"
+          >
+            <div className="w-10 h-10 rounded-xl bg-[#1B4332] text-white flex items-center justify-center shadow-xs transition-transform duration-200 group-hover:scale-105">
+              <BookOpen className="w-5 h-5 text-emerald-100" strokeWidth={2} />
+            </div>
+            <div className="flex flex-col">
+              <span className="font-serif text-lg font-bold text-stone-900 tracking-tight leading-tight group-hover:text-[#1B4332] transition-colors whitespace-nowrap">
+                Titian Ilmu
+              </span>
+              <span className="text-[11px] font-sans font-medium text-stone-500 tracking-wider uppercase whitespace-nowrap">
+                SMP Negeri 1 Tambak
+              </span>
+            </div>
+          </button>
+
+          {/* Zone 2: Navigation Links (Desktop) */}
+          <nav className="hidden lg:flex items-center gap-7 text-[14px] font-medium text-stone-600">
+            {navLinks.map((link) => {
+              const isActive = activePage === link.id;
+              return (
+                <button
+                  key={link.id}
+                  onClick={() => handleNavClick(link.id)}
+                  className={`relative py-2 whitespace-nowrap transition-colors duration-150 cursor-pointer ${
+                    isActive
+                      ? 'text-[#1B4332] font-semibold'
+                      : 'hover:text-stone-900'
+                  }`}
+                >
+                  {link.label}
+                  {isActive && (
+                    <span className="absolute bottom-0 left-0 w-full h-[2px] bg-[#1B4332] rounded-full" />
+                  )}
+                </button>
+              );
+            })}
+          </nav>
+
+          {/* Zone 3: Primary Action */}
+          <div className="hidden sm:flex items-center gap-3 shrink-0">
+            <button
+              onClick={() => handleNavClick('kontak')}
+              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold tracking-wide text-white bg-[#1B4332] rounded-lg hover:bg-[#143527] transition-all duration-150 shadow-xs hover:shadow-sm whitespace-nowrap cursor-pointer"
+            >
+              <Clock className="w-3.5 h-3.5 text-emerald-200" />
+              <span>Jam Layanan</span>
+            </button>
+          </div>
+
+          {/* Mobile Menu Toggle Button */}
+          <div className="flex lg:hidden items-center">
+            <button
+              type="button"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2.5 rounded-lg text-stone-700 hover:text-stone-950 hover:bg-[#F2ECE1] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332]"
+              aria-expanded={mobileMenuOpen}
+              aria-label="Buka menu navigasi"
+            >
+              {mobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Drawer */}
+      {mobileMenuOpen && (
+        <div className="lg:hidden border-t border-[#E6DFD3] bg-[#FAF8F5] px-4 pt-3 pb-6 space-y-1 shadow-lg">
+          <div className="mb-2 px-3 py-1.5 text-[11px] font-semibold text-stone-400 uppercase tracking-widest">
+            Navigasi Halaman
+          </div>
+          {navLinks.map((link) => {
+            const isActive = activePage === link.id;
+            return (
+              <button
+                key={link.id}
+                onClick={() => handleNavClick(link.id)}
+                className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-[#1B4332] text-white font-semibold'
+                    : 'text-stone-700 hover:bg-[#F2ECE1]'
+                }`}
+              >
+                <span>{link.label}</span>
+                {isActive && <ArrowRight className="w-4 h-4 text-emerald-200" />}
+              </button>
+            );
+          })}
+          <div className="pt-3 border-t border-[#E6DFD3] mt-2">
+            <button
+              onClick={() => handleNavClick('kontak')}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-[#1B4332] rounded-lg hover:bg-[#143527] transition-colors"
+            >
+              <Clock className="w-4 h-4 text-emerald-200" />
+              <span>Cek Jam Layanan & Kontak</span>
+            </button>
+          </div>
+        </div>
+      )}
+    </header>
+  );
+};

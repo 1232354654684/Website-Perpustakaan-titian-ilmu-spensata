@@ -1,0 +1,375 @@
+import React from 'react';
+import {
+  ArrowRight,
+  BookOpen,
+  Calendar,
+  Clock,
+  Compass,
+  FileText,
+  MapPin,
+  Sparkles,
+  Users,
+  CheckCircle2,
+  BookmarkCheck,
+  ChevronRight,
+} from 'lucide-react';
+import { libraryProfileData, operatingHoursData, newsData } from '../data/libraryData';
+import { NewsItem } from '../types';
+import { VisualFallback } from '../components/VisualFallback';
+
+interface HomeProps {
+  onNavigate: (page: string, articleId?: string) => void;
+}
+
+export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
+  const latestNews = newsData.slice(0, 3);
+
+  const stats = [
+    { label: 'Total Koleksi Buku', value: '8.450+', unit: 'Eksemplar' },
+    { label: 'Judul Bahan Pustaka', value: '2.980+', unit: 'Judul' },
+    { label: 'Anggota Aktif', value: '780+', unit: 'Siswa & Guru' },
+    { label: 'Akreditasi Sekolah', value: 'Grade A', unit: 'Perpustakaan Nasional' },
+  ];
+
+  const highlights = [
+    {
+      title: 'Koleksi Variatif & Terbuka',
+      desc: 'Buku fiksi berkualitas, novel remaja, ensiklopedia sains, serta modul tematik kurikulum terbaru.',
+      icon: BookOpen,
+    },
+    {
+      title: 'Ruang Baca Asri & Tenang',
+      desc: 'Area baca berpenyejuk udara, meja diskusi kelompok, serta selasar hijau lesehan di taman sekolah.',
+      icon: Sparkles,
+    },
+    {
+      title: 'Katalog Otomasi Terpadu',
+      desc: 'Pencarian judul buku secara instan melalui sistem katalog digital untuk kemudahan belajar mandiri.',
+      icon: Compass,
+    },
+    {
+      title: 'Gerakan Literasi Sekolah',
+      desc: 'Program 15 menit membaca rutin, apresiasi pembaca teladan bulanan, dan komunitas duta baca.',
+      icon: BookmarkCheck,
+    },
+  ];
+
+  return (
+    <div className="space-y-24">
+      {/* Hero Section */}
+      <section className="pt-6 sm:pt-10">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+          {/* Hero Left Content */}
+          <div className="lg:col-span-7 space-y-6">
+            <div className="inline-flex items-center gap-2.5 px-3 py-1 rounded-full bg-[#1B4332]/8 text-[#1B4332] text-xs font-semibold tracking-wide">
+              <span className="w-2 h-2 rounded-full bg-[#1B4332]" />
+              <span>{libraryProfileData.schoolName}</span>
+            </div>
+
+            <div className="space-y-3">
+              <h1 className="font-serif text-3.5xl sm:text-5xl lg:text-5.5xl font-bold text-stone-900 tracking-tight leading-[1.15] text-balance">
+                Perpustakaan Titian Ilmu
+              </h1>
+              <p className="font-serif italic text-xl sm:text-2xl text-[#1B4332] font-medium leading-relaxed">
+                "{libraryProfileData.tagline}"
+              </p>
+            </div>
+
+            <p className="text-base sm:text-lg text-stone-600 leading-relaxed max-w-2xl font-sans">
+              Selamat datang di pusat sumber belajar resmi SMP Negeri 1 Tambak.
+              Kami hadir menjembatani rasa ingin tahu para siswa dengan jendela
+              ilmu pengetahuan melalui koleksi pustaka terkurasi, suasana yang asri,
+              dan layanan yang ramah.
+            </p>
+
+            {/* CTAs */}
+            <div className="pt-2 flex flex-wrap items-center gap-4">
+              <button
+                onClick={() => onNavigate('berita')}
+                className="inline-flex items-center gap-2.5 px-6 py-3.5 text-sm font-semibold text-white bg-[#1B4332] rounded-xl hover:bg-[#143527] transition-all duration-150 shadow-sm hover:shadow-md cursor-pointer"
+              >
+                <span>Lihat Berita & Kegiatan</span>
+                <ArrowRight className="w-4 h-4 text-emerald-200" />
+              </button>
+              <button
+                onClick={() => onNavigate('profil')}
+                className="inline-flex items-center gap-2 px-5 py-3.5 text-sm font-semibold text-stone-700 bg-white border border-[#E6DFD3] rounded-xl hover:bg-[#F7F4EE] hover:text-stone-900 transition-colors cursor-pointer"
+              >
+                <span>Tentang Kami</span>
+              </button>
+            </div>
+
+            {/* Micro Trust Indicators */}
+            <div className="pt-4 flex flex-wrap items-center gap-y-2 gap-x-6 text-xs text-stone-500 font-sans border-t border-[#E6DFD3]/80">
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-[#1B4332]" />
+                <span>NPSN: {libraryProfileData.npsn}</span>
+              </div>
+              <span className="text-stone-300">·</span>
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 className="w-4 h-4 text-[#1B4332]" />
+                <span>{libraryProfileData.accreditation}</span>
+              </div>
+              <span className="text-stone-300">·</span>
+              <div className="flex items-center gap-1.5">
+                <MapPin className="w-4 h-4 text-[#1B4332]" />
+                <span>Kecamatan Tambak, Banyumas</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Hero Right Visual */}
+          <div className="lg:col-span-5">
+            <VisualFallback type="hero" className="w-full" aspectRatio="video" />
+          </div>
+        </div>
+      </section>
+
+      {/* Operational Hours Ribbon (Info Jam Layanan) */}
+      <section className="bg-white rounded-2xl border border-[#E6DFD3] p-6 sm:p-8 shadow-xs">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-[#E6DFD3]">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#1B4332]/10 text-[#1B4332] flex items-center justify-center shrink-0">
+              <Clock className="w-5 h-5 text-[#1B4332]" />
+            </div>
+            <div>
+              <h3 className="font-serif text-lg font-bold text-stone-900">
+                Informasi Jam Layanan Pemustaka
+              </h3>
+              <p className="text-xs text-stone-500">
+                Buka setiap hari kerja sekolah untuk layanan sirkulasi, referensi, dan ruang baca.
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => onNavigate('sop')}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1B4332] hover:text-[#122D21] transition-colors self-start md:self-auto cursor-pointer"
+          >
+            <span>Panduan SOP Peminjaman</span>
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-6">
+          {operatingHoursData.map((slot, index) => (
+            <div
+              key={index}
+              className={`p-4 rounded-xl border transition-colors ${
+                slot.isOpen
+                  ? 'bg-[#FAF8F5] border-[#E8E2D6]'
+                  : 'bg-stone-50 border-stone-200 opacity-75'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-stone-700 uppercase tracking-wide">
+                  {slot.dayRange}
+                </span>
+                <span
+                  className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                    slot.isOpen
+                      ? 'bg-emerald-100 text-emerald-800'
+                      : 'bg-stone-200 text-stone-700'
+                  }`}
+                >
+                  {slot.isOpen ? 'Buka' : 'Tutup'}
+                </span>
+              </div>
+              <p className="font-mono text-base font-bold text-stone-900">
+                {slot.hours}
+              </p>
+              {slot.breakTime && (
+                <p className="text-[11px] text-stone-500 mt-1">
+                  {slot.breakTime}
+                </p>
+              )}
+              {slot.notes && (
+                <p className="text-[11px] text-stone-400 mt-1 italic">
+                  {slot.notes}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Ringkasan Singkat Profil & Nilai Keunggulan */}
+      <section className="space-y-12">
+        <div className="max-w-3xl">
+          <p className="text-xs font-semibold text-[#1B4332] uppercase tracking-widest mb-2">
+            Mengenal Lebih Dekat
+          </p>
+          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-stone-900 tracking-tight leading-snug">
+            Jembatan Literasi untuk Masa Depan Siswa
+          </h2>
+          <p className="mt-4 text-base text-stone-600 leading-relaxed font-sans">
+            {libraryProfileData.about}
+          </p>
+        </div>
+
+        {/* 4 Feature Points */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {highlights.map((item, idx) => {
+            const Icon = item.icon;
+            return (
+              <div
+                key={idx}
+                className="bg-white p-6 rounded-2xl border border-[#E6DFD3] hover:border-[#1B4332]/40 transition-all duration-200 shadow-2xs group flex flex-col justify-between"
+              >
+                <div>
+                  <div className="w-10 h-10 rounded-xl bg-[#FAF8F5] border border-[#E6DFD3] text-[#1B4332] flex items-center justify-center mb-5 group-hover:bg-[#1B4332] group-hover:text-white transition-colors duration-200">
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  <h3 className="font-serif text-lg font-bold text-stone-900 mb-2">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="text-center pt-2">
+          <button
+            onClick={() => onNavigate('profil')}
+            className="inline-flex items-center gap-2 text-sm font-semibold text-[#1B4332] hover:text-[#122D21] underline underline-offset-8 transition-colors cursor-pointer"
+          >
+            <span>Pelajari Sejarah Lengkap, Visi & Misi Titian Ilmu</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+      </section>
+
+      {/* Statistik Perpustakaan (Tabular Rigor) */}
+      <section className="bg-[#FAF8F5] border-y border-[#E6DFD3] py-12">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 text-center">
+          {stats.map((s, idx) => (
+            <div key={idx} className="space-y-1">
+              <p className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold text-[#1B4332] tracking-tight tabular-nums">
+                {s.value}
+              </p>
+              <p className="text-xs uppercase tracking-wider font-semibold text-stone-700">
+                {s.label}
+              </p>
+              <p className="text-[11px] text-stone-500 font-sans">
+                {s.unit}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 3 Berita & Kegiatan Terbaru */}
+      <section className="space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+          <div>
+            <p className="text-xs font-semibold text-[#1B4332] uppercase tracking-widest mb-1">
+              Kabar Terbaru
+            </p>
+            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-stone-900 tracking-tight">
+              Warta & Kegiatan Literasi
+            </h2>
+            <p className="text-sm text-stone-600 mt-2">
+              Informasi terkini seputar dunia pustaka, karya pemustaka, dan program membaca sekolah.
+            </p>
+          </div>
+          <button
+            onClick={() => onNavigate('berita')}
+            className="inline-flex items-center gap-2 text-xs font-semibold text-[#1B4332] hover:text-[#143527] self-start sm:self-auto cursor-pointer"
+          >
+            <span>Semua Berita</span>
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {latestNews.map((news, idx) => {
+            const visualTypes: ('reading-club' | 'book-collection' | 'digital-library')[] = [
+              'reading-club',
+              'book-collection',
+              'digital-library',
+            ];
+            const vType = visualTypes[idx % visualTypes.length];
+
+            return (
+              <article
+                key={news.id}
+                onClick={() => onNavigate('berita', news.id)}
+                className="group bg-white rounded-2xl border border-[#E6DFD3] overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between"
+              >
+                <div>
+                  <div className="p-3">
+                    <VisualFallback type={vType} title={news.title} aspectRatio="video" />
+                  </div>
+                  <div className="p-5 pt-2 space-y-3">
+                    {/* Unboxed metadata per constitution */}
+                    <div className="flex items-center gap-2 text-xs text-stone-500 font-sans">
+                      <span className="font-semibold text-[#1B4332]">{news.category}</span>
+                      <span aria-hidden="true">·</span>
+                      <span className="flex items-center gap-1">
+                        <Calendar className="w-3 h-3 inline text-stone-400" />
+                        <span>{news.date}</span>
+                      </span>
+                      <span aria-hidden="true">·</span>
+                      <span>{news.readTime}</span>
+                    </div>
+
+                    <h3 className="font-serif text-lg font-bold text-stone-900 group-hover:text-[#1B4332] transition-colors leading-snug line-clamp-2">
+                      {news.title}
+                    </h3>
+
+                    <p className="text-xs sm:text-sm text-stone-600 leading-relaxed line-clamp-3">
+                      {news.excerpt}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="px-5 pb-5 pt-2 flex items-center justify-between border-t border-[#F2ECE1] text-xs">
+                  <span className="text-stone-500">{news.author}</span>
+                  <span className="font-semibold text-[#1B4332] group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
+                    <span>Baca</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </span>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Call to Action: Kunjungan & Menjadi Pembaca Aktif */}
+      <section className="bg-gradient-to-r from-[#1B4332] to-[#122D21] text-white rounded-3xl p-8 sm:p-12 lg:p-14 shadow-md relative overflow-hidden">
+        <div className="absolute right-0 bottom-0 opacity-10 pointer-events-none translate-x-12 translate-y-12">
+          <BookOpen className="w-96 h-96 text-white" />
+        </div>
+        <div className="max-w-2xl relative z-10 space-y-5">
+          <span className="inline-block px-3 py-1 rounded-full bg-white/10 text-emerald-200 text-xs font-medium uppercase tracking-wider">
+            Budaya Literasi Sekolah
+          </span>
+          <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight">
+            "Buku adalah sahabat sejati yang tak pernah lelah berbagi kebijaksanaan."
+          </h2>
+          <p className="text-sm sm:text-base text-emerald-100/90 leading-relaxed">
+            Ayo luangkan minimal 15 menit setiap hari untuk membaca. Kunjungi Perpustakaan Titian Ilmu, pinjam buku kegemaranmu, dan raih prestasi gemilang bersama kami.
+          </p>
+          <div className="pt-2 flex flex-wrap gap-4">
+            <button
+              onClick={() => onNavigate('sop')}
+              className="px-5 py-3 rounded-xl bg-white text-[#1B4332] font-semibold text-xs sm:text-sm hover:bg-emerald-50 transition-colors shadow-xs cursor-pointer"
+            >
+              Lihat Prosedur Peminjaman
+            </button>
+            <button
+              onClick={() => onNavigate('kontak')}
+              className="px-5 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-medium text-xs sm:text-sm border border-white/20 transition-colors cursor-pointer"
+            >
+              Lokasi & Jam Buka
+            </button>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+};

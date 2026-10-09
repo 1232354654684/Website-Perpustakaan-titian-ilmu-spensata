@@ -1,0 +1,6 @@
+{
+  "name": "Perpustakaan Titian Ilmu SMPN 1 Tambak",
+  "description": "Website resmi Perpustakaan Titian Ilmu SMP Negeri 1 Tambak. Gerbang Ilmu, Tumbuhkan Minat Baca. Layanan, berita literasi, profil, SOP, dan struktur organisasi.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
