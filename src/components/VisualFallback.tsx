@@ -26,45 +26,53 @@ export const VisualFallback: React.FC<VisualFallbackProps> = ({
   if (type === 'hero') {
     return (
       <div
-        className={`relative w-full ${aspectClass} overflow-hidden rounded-2xl bg-gradient-to-br from-[#1B4332] via-[#22573F] to-[#143527] text-white p-8 sm:p-12 flex flex-col justify-between shadow-md ${className}`}
+        className={`relative w-full min-h-[380px] sm:min-h-[420px] h-full overflow-hidden rounded-2xl bg-gradient-to-br from-[#1B4332] via-[#22573F] to-[#143527] text-white p-6 sm:p-8 lg:p-9 flex flex-col justify-between shadow-md ${className}`}
       >
         {/* Subtle decorative geometry (clean, architectural) */}
         <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#ffffff_1px,transparent_1px)] [background-size:16px_16px]" />
-        <div className="absolute -right-12 -bottom-12 w-80 h-80 rounded-full bg-emerald-400/10 blur-3xl pointer-events-none" />
-        <div className="absolute -left-12 -top-12 w-80 h-80 rounded-full bg-amber-400/10 blur-3xl pointer-events-none" />
+        <div className="absolute -right-12 -bottom-12 w-72 h-72 rounded-full bg-emerald-400/10 blur-3xl pointer-events-none" />
+        <div className="absolute -left-12 -top-12 w-72 h-72 rounded-full bg-amber-400/10 blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 flex items-center justify-between">
+        {/* Top Bar: Clean Badge and Location, wraps gracefully on narrow viewports */}
+        <div className="relative z-10 flex flex-wrap items-center justify-between gap-3">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs font-medium text-emerald-100">
-            <BookOpen className="w-3.5 h-3.5 text-emerald-300" />
-            <span>Pusat Literasi Pelajar SMPN 1 Tambak</span>
+            <BookOpen className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
+            <span>Pusat Literasi Siswa</span>
           </div>
-          <span className="text-xs font-mono tracking-widest text-emerald-200/80 uppercase">
-            Est. Banyumas
+          <span className="text-[11px] font-sans tracking-wide text-emerald-200/90 font-medium">
+            Kec. Tambak, Banyumas
           </span>
         </div>
 
-        <div className="relative z-10 max-w-lg my-auto pt-6 pb-4">
-          <h2 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold leading-tight text-white mb-2">
+        {/* Middle Content: Ample vertical space, no truncation */}
+        <div className="relative z-10 my-4 sm:my-6 space-y-3">
+          <h2 className="font-serif text-xl sm:text-2xl lg:text-3xl font-bold leading-snug text-white">
             Ruang Teduh untuk Menjelajah Dunia Lewat Buku
           </h2>
-          <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed font-sans">
-            Menyediakan lebih dari 8.000 bahan pustaka, ruang baca berpenyejuk udara, koleksi referensi digital, dan sudut baca ramah anak.
+          <p className="text-xs sm:text-sm text-emerald-100/90 leading-relaxed font-sans max-w-md">
+            Menyediakan lebih dari 8.000 bahan pustaka terkurasi, ruang baca berpenyejuk udara, otomasi katalog pencarian judul, serta selasar hijau ramah anak.
           </p>
         </div>
 
-        <div className="relative z-10 flex items-center gap-6 pt-4 border-t border-white/15 text-xs text-emerald-200/90">
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-white tabular-nums text-sm">8.450+</span>
-            <span>Koleksi Buku</span>
+        {/* Bottom Bar: Resilient 3-item grid that wraps seamlessly */}
+        <div className="relative z-10 grid grid-cols-2 sm:grid-cols-3 gap-3 pt-4 border-t border-white/15 text-xs text-emerald-200/90">
+          <div className="space-y-0.5">
+            <span className="block font-bold text-white tabular-nums text-sm sm:text-base">
+              8.450+
+            </span>
+            <span className="text-[11px] text-emerald-200/80">Koleksi Buku</span>
           </div>
-          <div className="w-1 h-1 rounded-full bg-emerald-400" />
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-white tabular-nums text-sm">780+</span>
-            <span>Anggota Aktif</span>
+          <div className="space-y-0.5">
+            <span className="block font-bold text-white tabular-nums text-sm sm:text-base">
+              780+
+            </span>
+            <span className="text-[11px] text-emerald-200/80">Anggota Aktif</span>
           </div>
-          <div className="w-1 h-1 rounded-full bg-emerald-400" />
-          <div className="flex items-center gap-2">
-            <span className="font-bold text-white text-sm">Akreditasi A</span>
+          <div className="col-span-2 sm:col-span-1 space-y-0.5">
+            <span className="block font-bold text-white text-sm sm:text-base">
+              Senin – Sabtu
+            </span>
+            <span className="text-[11px] text-emerald-200/80">Jam Layanan</span>
           </div>
         </div>
       </div>

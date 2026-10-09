@@ -38,7 +38,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               Pusat sumber belajar, literasi informasi, dan inovasi pendidikan bagi generasi pembelajar abad ke-21.
             </p>
             <div className="pt-2 text-xs text-stone-400">
-              <span className="font-semibold text-emerald-300">NPSN:</span> {libraryProfileData.npsn} · <span className="font-semibold text-emerald-300">{libraryProfileData.accreditation}</span>
+              <span className="font-semibold text-emerald-300">NPSN:</span> {libraryProfileData.npsn || '-'} · <span className="font-semibold text-emerald-300">Akreditasi:</span> {libraryProfileData.accreditation || '-'}
             </div>
           </div>
 

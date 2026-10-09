@@ -88,16 +88,16 @@ export const Profile: React.FC = () => {
               <p className="text-[11px] uppercase tracking-wider text-stone-500 font-semibold">
                 Status Akreditasi
               </p>
-              <p className="font-serif text-xl font-bold text-[#1B4332]">
-                {libraryProfileData.accreditation}
+              <p className="font-serif text-lg font-bold text-stone-700">
+                {libraryProfileData.accreditation || '-'}
               </p>
             </div>
             <div className="pt-2 border-t border-[#E6DFD3]">
               <p className="text-[11px] uppercase tracking-wider text-stone-500 font-semibold">
                 Nomor Pokok Sekolah Nasional (NPSN)
               </p>
-              <p className="font-mono text-base font-bold text-stone-900">
-                {libraryProfileData.npsn}
+              <p className="font-mono text-base font-bold text-stone-700">
+                {libraryProfileData.npsn || '-'}
               </p>
             </div>
             <div className="pt-2 border-t border-[#E6DFD3]">

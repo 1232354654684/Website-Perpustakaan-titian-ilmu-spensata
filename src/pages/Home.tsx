@@ -28,7 +28,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
     { label: 'Total Koleksi Buku', value: '8.450+', unit: 'Eksemplar' },
     { label: 'Judul Bahan Pustaka', value: '2.980+', unit: 'Judul' },
     { label: 'Anggota Aktif', value: '780+', unit: 'Siswa & Guru' },
-    { label: 'Akreditasi Sekolah', value: 'Grade A', unit: 'Perpustakaan Nasional' },
+    { label: 'Status Akreditasi', value: libraryProfileData.accreditation || '-', unit: 'Perpustakaan Sekolah' },
   ];
 
   const highlights = [
@@ -57,58 +57,60 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
   return (
     <div className="space-y-24">
       {/* Hero Section */}
-      <section className="pt-6 sm:pt-10">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+      <section className="pt-4 sm:pt-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
           {/* Hero Left Content */}
-          <div className="lg:col-span-7 space-y-6">
-            <div className="inline-flex items-center gap-2.5 px-3 py-1 rounded-full bg-[#1B4332]/8 text-[#1B4332] text-xs font-semibold tracking-wide">
-              <span className="w-2 h-2 rounded-full bg-[#1B4332]" />
-              <span>{libraryProfileData.schoolName}</span>
-            </div>
+          <div className="lg:col-span-7 flex flex-col justify-between space-y-6">
+            <div className="space-y-5">
+              <div className="inline-flex items-center gap-2.5 px-3 py-1 rounded-full bg-[#1B4332]/8 text-[#1B4332] text-xs font-semibold tracking-wide">
+                <span className="w-2 h-2 rounded-full bg-[#1B4332]" />
+                <span>{libraryProfileData.schoolName}</span>
+              </div>
 
-            <div className="space-y-3">
-              <h1 className="font-serif text-3.5xl sm:text-5xl lg:text-5.5xl font-bold text-stone-900 tracking-tight leading-[1.15] text-balance">
-                Perpustakaan Titian Ilmu
-              </h1>
-              <p className="font-serif italic text-xl sm:text-2xl text-[#1B4332] font-medium leading-relaxed">
-                "{libraryProfileData.tagline}"
+              <div className="space-y-3">
+                <h1 className="font-serif text-3xl sm:text-4.5xl lg:text-5xl font-bold text-stone-900 tracking-tight leading-[1.18] text-balance">
+                  Perpustakaan Titian Ilmu
+                </h1>
+                <p className="font-serif italic text-lg sm:text-2xl text-[#1B4332] font-medium leading-relaxed">
+                  "{libraryProfileData.tagline}"
+                </p>
+              </div>
+
+              <p className="text-sm sm:text-base text-stone-600 leading-relaxed max-w-2xl font-sans">
+                Selamat datang di pusat sumber belajar resmi SMP Negeri 1 Tambak.
+                Kami hadir menjembatani rasa ingin tahu para siswa dengan jendela
+                ilmu pengetahuan melalui koleksi pustaka terkurasi, suasana yang asri,
+                dan layanan yang ramah.
               </p>
+
+              {/* CTAs */}
+              <div className="pt-1 flex flex-wrap items-center gap-3.5">
+                <button
+                  onClick={() => onNavigate('berita')}
+                  className="inline-flex items-center gap-2.5 px-5 py-3 text-xs sm:text-sm font-semibold text-white bg-[#1B4332] rounded-xl hover:bg-[#143527] transition-all duration-150 shadow-xs hover:shadow-sm cursor-pointer"
+                >
+                  <span>Lihat Berita & Kegiatan</span>
+                  <ArrowRight className="w-4 h-4 text-emerald-200" />
+                </button>
+                <button
+                  onClick={() => onNavigate('profil')}
+                  className="inline-flex items-center gap-2 px-4.5 py-3 text-xs sm:text-sm font-semibold text-stone-700 bg-white border border-[#E6DFD3] rounded-xl hover:bg-[#F7F4EE] hover:text-stone-900 transition-colors cursor-pointer"
+                >
+                  <span>Tentang Kami</span>
+                </button>
+              </div>
             </div>
 
-            <p className="text-base sm:text-lg text-stone-600 leading-relaxed max-w-2xl font-sans">
-              Selamat datang di pusat sumber belajar resmi SMP Negeri 1 Tambak.
-              Kami hadir menjembatani rasa ingin tahu para siswa dengan jendela
-              ilmu pengetahuan melalui koleksi pustaka terkurasi, suasana yang asri,
-              dan layanan yang ramah.
-            </p>
-
-            {/* CTAs */}
-            <div className="pt-2 flex flex-wrap items-center gap-4">
-              <button
-                onClick={() => onNavigate('berita')}
-                className="inline-flex items-center gap-2.5 px-6 py-3.5 text-sm font-semibold text-white bg-[#1B4332] rounded-xl hover:bg-[#143527] transition-all duration-150 shadow-sm hover:shadow-md cursor-pointer"
-              >
-                <span>Lihat Berita & Kegiatan</span>
-                <ArrowRight className="w-4 h-4 text-emerald-200" />
-              </button>
-              <button
-                onClick={() => onNavigate('profil')}
-                className="inline-flex items-center gap-2 px-5 py-3.5 text-sm font-semibold text-stone-700 bg-white border border-[#E6DFD3] rounded-xl hover:bg-[#F7F4EE] hover:text-stone-900 transition-colors cursor-pointer"
-              >
-                <span>Tentang Kami</span>
-              </button>
-            </div>
-
-            {/* Micro Trust Indicators */}
-            <div className="pt-4 flex flex-wrap items-center gap-y-2 gap-x-6 text-xs text-stone-500 font-sans border-t border-[#E6DFD3]/80">
+            {/* Micro Trust Indicators with neutral placeholders */}
+            <div className="pt-4 flex flex-wrap items-center gap-y-2 gap-x-5 text-xs text-stone-500 font-sans border-t border-[#E6DFD3]/80">
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-[#1B4332]" />
-                <span>NPSN: {libraryProfileData.npsn}</span>
+                <span>NPSN: {libraryProfileData.npsn || '-'}</span>
               </div>
               <span className="text-stone-300">·</span>
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-[#1B4332]" />
-                <span>{libraryProfileData.accreditation}</span>
+                <span>Akreditasi: {libraryProfileData.accreditation || '-'}</span>
               </div>
               <span className="text-stone-300">·</span>
               <div className="flex items-center gap-1.5">
@@ -119,8 +121,8 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
           </div>
 
           {/* Hero Right Visual */}
-          <div className="lg:col-span-5">
-            <VisualFallback type="hero" className="w-full" aspectRatio="video" />
+          <div className="lg:col-span-5 flex flex-col justify-stretch">
+            <VisualFallback type="hero" className="w-full h-full" aspectRatio="auto" />
           </div>
         </div>
       </section>

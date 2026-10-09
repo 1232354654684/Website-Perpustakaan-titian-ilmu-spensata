@@ -5,8 +5,8 @@ export const libraryProfileData: LibraryProfile = {
   shortName: 'Titian Ilmu',
   tagline: 'Gerbang Ilmu, Tumbuhkan Minat Baca',
   schoolName: 'SMP Negeri 1 Tambak',
-  npsn: '20301889',
-  accreditation: 'Akreditasi A (Perpustakaan Sekolah)',
+  npsn: '-',
+  accreditation: '-',
   about:
     'Perpustakaan "Titian Ilmu" SMP Negeri 1 Tambak merupakan pusat sumber belajar, sarana literasi informasi, dan wahana rekreasi edukatif bagi seluruh warga sekolah. Berkomitmen mewujudkan generasi pembelajar yang cerdas, berkarakter luhur, dan berwawasan luas melalui penyediaan koleksi pustaka berkualitas serta pelayanan prima berorientasi pemustaka.',
   history:
@@ -384,7 +384,7 @@ export const staffData: StaffMember[] = [
     name: 'Drs. H. Sugiyanto, M.Pd.',
     role: 'Penanggung Jawab / Kepala Sekolah',
     positionCategory: 'Pimpinan',
-    nip: '19680415 199412 1 002',
+    nip: '-',
     education: 'S2 Manajemen Pendidikan',
     bio:
       'Memberikan arahan kebijakan umum, alokasi anggaran, dan pembinaan strategis dalam peningkatan mutu perpustakaan sebagai jantung keunggulan akademik SMPN 1 Tambak.',
@@ -400,7 +400,7 @@ export const staffData: StaffMember[] = [
     name: 'Dra. Sri Wahyuni, M.Pd.',
     role: 'Kepala Perpustakaan',
     positionCategory: 'Pimpinan',
-    nip: '19740922 199903 2 004',
+    nip: '-',
     education: 'S2 Pendidikan Bahasa Indonesia & Sertifikasi Pengelola Perpustakaan',
     bio:
       'Bertanggung jawab merencanakan program kerja tahunan, memimpin operasional pelayanan, menjalin kemitraan literasi, serta membimbing duta baca sekolah.',
@@ -417,7 +417,7 @@ export const staffData: StaffMember[] = [
     name: 'Siti Rohimah, S.Pd.',
     role: 'Staf Pengolahan Bahan Pustaka',
     positionCategory: 'Teknis',
-    nip: '19860310 201101 2 018',
+    nip: '-',
     education: 'S1 Kependidikan & Diklat Klasifikasi DDC',
     bio:
       'Menangani alur teknis inventarisasi buku baru, pengatalogan, klasifikasi kode DDC, pelabelan punggung buku, hingga penataan susunan di rak koleksi.',
@@ -434,7 +434,7 @@ export const staffData: StaffMember[] = [
     name: 'Bambang Triyono, S.Sos.',
     role: 'Staf Pelayanan Pemustaka & Sirkulasi',
     positionCategory: 'Layanan',
-    nip: '19891104 201903 1 008',
+    nip: '-',
     education: 'S1 Ilmu Komunikasi',
     bio:
       'Melayani transaksi sirkulasi peminjaman dan pengembalian dengan ramah, memandu penelusuran bahan referensi, serta menjaga ketertiban ruang baca.',
@@ -451,7 +451,7 @@ export const staffData: StaffMember[] = [
     name: 'Rian Pratama, S.Kom.',
     role: 'Staf Teknologi Informasi & Otomasi',
     positionCategory: 'Teknis',
-    nip: '19930718 202221 1 003',
+    nip: '-',
     education: 'S1 Sistem Informasi',
     bio:
       'Mengelola sistem otomasi perpustakaan (katalog OPAC, database anggota, jaringan lokal perpustakaan), serta pemeliharaan komputer pemustaka.',
