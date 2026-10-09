@@ -1,0 +1,120 @@
+{
+  "entities": {
+    "AdminEmail": {
+      "title": "Admin Email",
+      "description": "Authorized admin email record",
+      "type": "object",
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "Admin email address"
+        },
+        "addedAt": {
+          "type": "string",
+          "description": "Date added"
+        }
+      },
+      "required": ["email"]
+    },
+    "GeneralSettings": {
+      "title": "General Settings",
+      "description": "Perpustakaan Titian Ilmu configuration and institutional profile",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "shortName": { "type": "string" },
+        "tagline": { "type": "string" },
+        "schoolName": { "type": "string" },
+        "npsn": { "type": "string" },
+        "accreditation": { "type": "string" },
+        "about": { "type": "string" },
+        "history": { "type": "string" },
+        "vision": { "type": "string" },
+        "missions": { "type": "array" },
+        "goals": { "type": "array" },
+        "stats": { "type": "object" },
+        "operatingHours": { "type": "array" },
+        "contactInfo": { "type": "object" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["name", "schoolName", "tagline"]
+    },
+    "News": {
+      "title": "News Item",
+      "description": "Library and school literacy articles",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "slug": { "type": "string" },
+        "category": { "type": "string" },
+        "date": { "type": "string" },
+        "author": { "type": "string" },
+        "authorRole": { "type": "string" },
+        "excerpt": { "type": "string" },
+        "content": { "type": "array" },
+        "imageUrl": { "type": "string" },
+        "readTime": { "type": "string" },
+        "featured": { "type": "boolean" },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["title", "category", "date", "excerpt"]
+    },
+    "SOP": {
+      "title": "SOP Item",
+      "description": "Library service standard operating procedures",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "category": { "type": "string" },
+        "description": { "type": "string" },
+        "targetAudience": { "type": "string" },
+        "processingTime": { "type": "string" },
+        "requirements": { "type": "array" },
+        "steps": { "type": "array" },
+        "notes": { "type": "string" },
+        "orderIndex": { "type": "number" }
+      },
+      "required": ["title", "category", "description", "steps"]
+    },
+    "Staff": {
+      "title": "Staff Member",
+      "description": "Library management organization members",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "role": { "type": "string" },
+        "positionCategory": { "type": "string" },
+        "nip": { "type": "string" },
+        "education": { "type": "string" },
+        "bio": { "type": "string" },
+        "tasks": { "type": "array" },
+        "avatarUrl": { "type": "string" },
+        "orderIndex": { "type": "number" }
+      },
+      "required": ["name", "role", "positionCategory"]
+    }
+  },
+  "firestore": {
+    "/settings/general": {
+      "schema": "GeneralSettings",
+      "description": "General settings document"
+    },
+    "/news/{newsId}": {
+      "schema": "News",
+      "description": "Published literacy articles"
+    },
+    "/sop/{sopId}": {
+      "schema": "SOP",
+      "description": "Service operating procedures"
+    },
+    "/staff/{staffId}": {
+      "schema": "Staff",
+      "description": "Organizational staff members"
+    },
+    "/admin_emails/{emailId}": {
+      "schema": "AdminEmail",
+      "description": "Allowed admin email documents"
+    }
+  }
+}

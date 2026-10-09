@@ -13,7 +13,7 @@ import {
   BookmarkCheck,
   ChevronRight,
 } from 'lucide-react';
-import { libraryProfileData, operatingHoursData, newsData } from '../data/libraryData';
+import { useLibrary } from '../context/LibraryContext';
 import { NewsItem } from '../types';
 import { VisualFallback } from '../components/VisualFallback';
 
@@ -22,13 +22,14 @@ interface HomeProps {
 }
 
 export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
-  const latestNews = newsData.slice(0, 3);
+  const { settings, operatingHours, newsList, loading } = useLibrary();
+  const latestNews = newsList.slice(0, 3);
 
   const stats = [
-    { label: 'Total Koleksi Buku', value: '8.450+', unit: 'Eksemplar' },
-    { label: 'Judul Bahan Pustaka', value: '2.980+', unit: 'Judul' },
-    { label: 'Anggota Aktif', value: '780+', unit: 'Siswa & Guru' },
-    { label: 'Status Akreditasi', value: libraryProfileData.accreditation || '-', unit: 'Perpustakaan Sekolah' },
+    { label: 'Total Koleksi Buku', value: settings.stats?.totalBooks ? `${settings.stats.totalBooks}+` : '8.450+', unit: 'Eksemplar' },
+    { label: 'Judul Bahan Pustaka', value: settings.stats?.totalTitles ? `${settings.stats.totalTitles}+` : '2.980+', unit: 'Judul' },
+    { label: 'Anggota Aktif', value: settings.stats?.activeMembers ? `${settings.stats.activeMembers}+` : '780+', unit: 'Siswa & Guru' },
+    { label: 'Status Akreditasi', value: settings.accreditation || '-', unit: 'Perpustakaan Sekolah' },
   ];
 
   const highlights = [
@@ -64,20 +65,20 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             <div className="space-y-5">
               <div className="inline-flex items-center gap-2.5 px-3 py-1 rounded-full bg-[#1B4332]/8 text-[#1B4332] text-xs font-semibold tracking-wide">
                 <span className="w-2 h-2 rounded-full bg-[#1B4332]" />
-                <span>{libraryProfileData.schoolName}</span>
+                <span>{settings.schoolName}</span>
               </div>
 
               <div className="space-y-3">
                 <h1 className="font-serif text-3xl sm:text-4.5xl lg:text-5xl font-bold text-stone-900 tracking-tight leading-[1.18] text-balance">
-                  Perpustakaan Titian Ilmu
+                  {settings.name}
                 </h1>
                 <p className="font-serif italic text-lg sm:text-2xl text-[#1B4332] font-medium leading-relaxed">
-                  "{libraryProfileData.tagline}"
+                  "{settings.tagline}"
                 </p>
               </div>
 
               <p className="text-sm sm:text-base text-stone-600 leading-relaxed max-w-2xl font-sans">
-                Selamat datang di pusat sumber belajar resmi SMP Negeri 1 Tambak.
+                Selamat datang di pusat sumber belajar resmi {settings.schoolName}.
                 Kami hadir menjembatani rasa ingin tahu para siswa dengan jendela
                 ilmu pengetahuan melalui koleksi pustaka terkurasi, suasana yang asri,
                 dan layanan yang ramah.
@@ -105,12 +106,12 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             <div className="pt-4 flex flex-wrap items-center gap-y-2 gap-x-5 text-xs text-stone-500 font-sans border-t border-[#E6DFD3]/80">
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-[#1B4332]" />
-                <span>NPSN: {libraryProfileData.npsn || '-'}</span>
+                <span>NPSN: {settings.npsn || '-'}</span>
               </div>
               <span className="text-stone-300">·</span>
               <div className="flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-[#1B4332]" />
-                <span>Akreditasi: {libraryProfileData.accreditation || '-'}</span>
+                <span>Akreditasi: {settings.accreditation || '-'}</span>
               </div>
               <span className="text-stone-300">·</span>
               <div className="flex items-center gap-1.5">
@@ -153,7 +154,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-6">
-          {operatingHoursData.map((slot, index) => (
+          {operatingHours.map((slot, index) => (
             <div
               key={index}
               className={`p-4 rounded-xl border transition-colors ${
@@ -204,7 +205,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             Jembatan Literasi untuk Masa Depan Siswa
           </h2>
           <p className="mt-4 text-base text-stone-600 leading-relaxed font-sans">
-            {libraryProfileData.about}
+            {settings.about}
           </p>
         </div>
 
@@ -286,59 +287,74 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {latestNews.map((news, idx) => {
-            const visualTypes: ('reading-club' | 'book-collection' | 'digital-library')[] = [
-              'reading-club',
-              'book-collection',
-              'digital-library',
-            ];
-            const vType = visualTypes[idx % visualTypes.length];
+        {latestNews.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-[#E6DFD3] p-10 text-center space-y-2">
+            <p className="font-serif font-bold text-stone-800">Belum Ada Warta Literasi Terbaru</p>
+            <p className="text-xs text-stone-500">Warta kegiatan membaca dan kabar perpustakaan akan segera dipublikasikan di sini.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {latestNews.map((news, idx) => {
+              const visualTypes: ('reading-club' | 'book-collection' | 'digital-library')[] = [
+                'reading-club',
+                'book-collection',
+                'digital-library',
+              ];
+              const vType = visualTypes[idx % visualTypes.length];
 
-            return (
-              <article
-                key={news.id}
-                onClick={() => onNavigate('berita', news.id)}
-                className="group bg-white rounded-2xl border border-[#E6DFD3] overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between"
-              >
-                <div>
-                  <div className="p-3">
-                    <VisualFallback type={vType} title={news.title} aspectRatio="video" />
-                  </div>
-                  <div className="p-5 pt-2 space-y-3">
-                    {/* Unboxed metadata per constitution */}
-                    <div className="flex items-center gap-2 text-xs text-stone-500 font-sans">
-                      <span className="font-semibold text-[#1B4332]">{news.category}</span>
-                      <span aria-hidden="true">·</span>
-                      <span className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3 inline text-stone-400" />
-                        <span>{news.date}</span>
-                      </span>
-                      <span aria-hidden="true">·</span>
-                      <span>{news.readTime}</span>
+              return (
+                <article
+                  key={news.id}
+                  onClick={() => onNavigate('berita', news.id)}
+                  className="group bg-white rounded-2xl border border-[#E6DFD3] overflow-hidden hover:shadow-md transition-all duration-200 cursor-pointer flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="p-3">
+                      {news.imageUrl ? (
+                        <img
+                          src={news.imageUrl}
+                          alt={news.title}
+                          className="w-full h-44 object-cover rounded-xl"
+                        />
+                      ) : (
+                        <VisualFallback type={vType} title={news.title} aspectRatio="video" />
+                      )}
                     </div>
+                    <div className="p-5 pt-2 space-y-3">
+                      {/* Unboxed metadata per constitution */}
+                      <div className="flex items-center gap-2 text-xs text-stone-500 font-sans">
+                        <span className="font-semibold text-[#1B4332]">{news.category}</span>
+                        <span aria-hidden="true">·</span>
+                        <span className="flex items-center gap-1">
+                          <Calendar className="w-3 h-3 inline text-stone-400" />
+                          <span>{news.date}</span>
+                        </span>
+                        <span aria-hidden="true">·</span>
+                        <span>{news.readTime}</span>
+                      </div>
 
-                    <h3 className="font-serif text-lg font-bold text-stone-900 group-hover:text-[#1B4332] transition-colors leading-snug line-clamp-2">
-                      {news.title}
-                    </h3>
+                      <h3 className="font-serif text-lg font-bold text-stone-900 group-hover:text-[#1B4332] transition-colors leading-snug line-clamp-2">
+                        {news.title}
+                      </h3>
 
-                    <p className="text-xs sm:text-sm text-stone-600 leading-relaxed line-clamp-3">
-                      {news.excerpt}
-                    </p>
+                      <p className="text-xs sm:text-sm text-stone-600 leading-relaxed line-clamp-3">
+                        {news.excerpt}
+                      </p>
+                    </div>
                   </div>
-                </div>
 
-                <div className="px-5 pb-5 pt-2 flex items-center justify-between border-t border-[#F2ECE1] text-xs">
-                  <span className="text-stone-500">{news.author}</span>
-                  <span className="font-semibold text-[#1B4332] group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
-                    <span>Baca</span>
-                    <ArrowRight className="w-3.5 h-3.5" />
-                  </span>
-                </div>
-              </article>
-            );
-          })}
-        </div>
+                  <div className="px-5 pb-5 pt-2 flex items-center justify-between border-t border-[#F2ECE1] text-xs">
+                    <span className="text-stone-500">{news.author}</span>
+                    <span className="font-semibold text-[#1B4332] group-hover:translate-x-1 transition-transform inline-flex items-center gap-1">
+                      <span>Baca</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </span>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
       </section>
 
       {/* Call to Action: Kunjungan & Menjadi Pembaca Aktif */}

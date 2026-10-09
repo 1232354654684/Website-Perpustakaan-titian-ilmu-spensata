@@ -4,6 +4,7 @@
  */
 
 import React, { useState, useEffect } from 'react';
+import { LibraryProvider, useLibrary } from './context/LibraryContext';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { Home } from './pages/Home';
@@ -12,12 +13,14 @@ import { News } from './pages/News';
 import { SOP } from './pages/SOP';
 import { Organization } from './pages/Organization';
 import { Contact } from './pages/Contact';
+import { Admin } from './pages/Admin';
 
-export default function App() {
+function MainApp() {
+  const { loading } = useLibrary();
   const [activePage, setActivePage] = useState<string>('beranda');
   const [selectedArticleId, setSelectedArticleId] = useState<string | null>(null);
 
-  // Sync state with URL hash for browser history & bookmarking
+  // Sync state with URL hash for browser history & direct links like #admin
   useEffect(() => {
     const handleHashChange = () => {
       const rawHash = window.location.hash.replace('#', '');
@@ -32,7 +35,7 @@ export default function App() {
         setActivePage('berita');
         setSelectedArticleId(articleId);
       } else {
-        const validPages = ['beranda', 'profil', 'berita', 'sop', 'struktur', 'kontak'];
+        const validPages = ['beranda', 'profil', 'berita', 'sop', 'struktur', 'kontak', 'admin'];
         if (validPages.includes(rawHash)) {
           setActivePage(rawHash);
           setSelectedArticleId(null);
@@ -83,6 +86,8 @@ export default function App() {
         return <Organization />;
       case 'kontak':
         return <Contact />;
+      case 'admin':
+        return <Admin />;
       default:
         return <Home onNavigate={handleNavigate} />;
     }
@@ -90,7 +95,14 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#FAF8F5] text-stone-800 flex flex-col font-sans selection:bg-[#1B4332] selection:text-white">
-      {/* Top Navigation */}
+      {/* Subtle top indicator if fetching Firestore */}
+      {loading && (
+        <div className="fixed top-0 left-0 w-full h-1 bg-[#1B4332]/20 z-50 overflow-hidden">
+          <div className="w-1/3 h-full bg-[#1B4332] animate-[indeterminate_1.5s_infinite_linear]" />
+        </div>
+      )}
+
+      {/* Top Navigation Bar */}
       <Navbar activePage={activePage} onNavigate={handleNavigate} />
 
       {/* Main Content Area */}
@@ -101,5 +113,13 @@ export default function App() {
       {/* Footer */}
       <Footer onNavigate={handleNavigate} />
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <LibraryProvider>
+      <MainApp />
+    </LibraryProvider>
   );
 }

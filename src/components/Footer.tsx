@@ -1,12 +1,14 @@
 import React from 'react';
-import { BookOpen, MapPin, Mail, Phone, ExternalLink, Heart } from 'lucide-react';
-import { libraryProfileData, contactInfoData } from '../data/libraryData';
+import { BookOpen, MapPin, Mail, Phone, ExternalLink, Heart, Shield } from 'lucide-react';
+import { useLibrary } from '../context/LibraryContext';
 
 interface FooterProps {
   onNavigate: (page: string) => void;
 }
 
 export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
+  const { settings, contactInfo, operatingHours } = useLibrary();
+
   const handleNav = (page: string) => {
     onNavigate(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -24,21 +26,21 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               </div>
               <div>
                 <h3 className="font-serif text-lg font-bold text-white tracking-tight">
-                  {libraryProfileData.name}
+                  {settings.name}
                 </h3>
                 <p className="text-xs text-stone-400">
-                  {libraryProfileData.schoolName}
+                  {settings.schoolName}
                 </p>
               </div>
             </div>
             <p className="font-serif italic text-sm text-emerald-200/90 leading-relaxed pt-1">
-              "{libraryProfileData.tagline}"
+              "{settings.tagline}"
             </p>
             <p className="text-xs text-stone-400 leading-relaxed">
               Pusat sumber belajar, literasi informasi, dan inovasi pendidikan bagi generasi pembelajar abad ke-21.
             </p>
             <div className="pt-2 text-xs text-stone-400">
-              <span className="font-semibold text-emerald-300">NPSN:</span> {libraryProfileData.npsn || '-'} · <span className="font-semibold text-emerald-300">Akreditasi:</span> {libraryProfileData.accreditation || '-'}
+              <span className="font-semibold text-emerald-300">NPSN:</span> {settings.npsn || '-'} · <span className="font-semibold text-emerald-300">Akreditasi:</span> {settings.accreditation || '-'}
             </div>
           </div>
 
@@ -96,6 +98,15 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
                   Kontak & Lokasi
                 </button>
               </li>
+              <li className="pt-2 border-t border-emerald-900/40">
+                <button
+                  onClick={() => handleNav('admin')}
+                  className="text-emerald-300 hover:text-white transition-colors cursor-pointer text-left flex items-center gap-1.5 text-xs font-medium"
+                >
+                  <Shield className="w-3.5 h-3.5" />
+                  <span>Portal Administrator</span>
+                </button>
+              </li>
             </ul>
           </div>
 
@@ -105,22 +116,12 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
               Jam Operasional
             </h4>
             <div className="space-y-2.5 text-xs text-stone-300">
-              <div>
-                <p className="font-medium text-white">Senin – Kamis</p>
-                <p className="text-stone-400">07.00 – 14.30 WIB</p>
-              </div>
-              <div>
-                <p className="font-medium text-white">Jumat</p>
-                <p className="text-stone-400">07.00 – 11.15 WIB</p>
-              </div>
-              <div>
-                <p className="font-medium text-white">Sabtu</p>
-                <p className="text-stone-400">07.30 – 13.00 WIB (Klub Literasi)</p>
-              </div>
-              <div>
-                <p className="font-medium text-stone-400">Minggu & Hari Libur</p>
-                <p className="text-amber-200/80">Tutup</p>
-              </div>
+              {operatingHours.slice(0, 4).map((h, idx) => (
+                <div key={idx}>
+                  <p className="font-medium text-white">{h.dayRange}</p>
+                  <p className="text-stone-400">{h.hours}</p>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -132,19 +133,19 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             <div className="space-y-2.5 text-xs text-stone-300">
               <div className="flex items-start gap-2.5">
                 <MapPin className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-                <span>{contactInfoData.address}</span>
+                <span>{contactInfo.address}</span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Phone className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>{contactInfoData.phone}</span>
+                <span>{contactInfo.phone}</span>
               </div>
               <div className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span className="truncate">{contactInfoData.email}</span>
+                <span className="truncate">{contactInfo.email}</span>
               </div>
               <div className="pt-2">
                 <a
-                  href={`https://wa.me/${contactInfoData.whatsapp}?text=Halo%20Perpustakaan%20Titian%20Ilmu%20SMPN%201%20Tambak`}
+                  href={`https://wa.me/${contactInfo.whatsapp}?text=Halo%20Perpustakaan%20Titian%20Ilmu%20SMPN%201%20Tambak`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1.5 text-xs font-medium text-emerald-300 hover:text-emerald-200 underline underline-offset-4 transition-colors"
@@ -160,7 +161,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
         {/* Hairline Bottom Bar */}
         <div className="pt-8 border-t border-emerald-950/80 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-stone-400">
           <p>
-            © {new Date().getFullYear()} {libraryProfileData.name} — {libraryProfileData.schoolName}. Hak cipta dilindungi.
+            © {new Date().getFullYear()} {settings.name} — {settings.schoolName}. Hak cipta dilindungi.
           </p>
           <p className="flex items-center gap-1.5 text-stone-400">
             <span>Dikelola dengan semangat literasi</span>

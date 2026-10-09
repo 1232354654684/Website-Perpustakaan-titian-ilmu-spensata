@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { BookOpen, Menu, X, Clock, ArrowRight } from 'lucide-react';
+import { BookOpen, Menu, X, Clock, ArrowRight, Shield } from 'lucide-react';
+import { useLibrary } from '../context/LibraryContext';
 
 interface NavbarProps {
   activePage: string;
@@ -7,6 +8,7 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ activePage, onNavigate }) => {
+  const { settings, isAdmin, user } = useLibrary();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const navLinks = [
@@ -31,17 +33,17 @@ export const Navbar: React.FC<NavbarProps> = ({ activePage, onNavigate }) => {
           {/* Zone 1: Brand Wordmark (Single line, display face) */}
           <button
             onClick={() => handleNavClick('beranda')}
-            className="flex items-center gap-3 text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332] rounded-lg p-1 shrink-0"
+            className="flex items-center gap-3 text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332] rounded-lg p-1 shrink-0 cursor-pointer"
           >
             <div className="w-10 h-10 rounded-xl bg-[#1B4332] text-white flex items-center justify-center shadow-xs transition-transform duration-200 group-hover:scale-105">
               <BookOpen className="w-5 h-5 text-emerald-100" strokeWidth={2} />
             </div>
             <div className="flex flex-col">
               <span className="font-serif text-lg font-bold text-stone-900 tracking-tight leading-tight group-hover:text-[#1B4332] transition-colors whitespace-nowrap">
-                Titian Ilmu
+                {settings.shortName || 'Titian Ilmu'}
               </span>
               <span className="text-[11px] font-sans font-medium text-stone-500 tracking-wider uppercase whitespace-nowrap">
-                SMP Negeri 1 Tambak
+                {settings.schoolName || 'SMP Negeri 1 Tambak'}
               </span>
             </div>
           </button>
@@ -69,8 +71,21 @@ export const Navbar: React.FC<NavbarProps> = ({ activePage, onNavigate }) => {
             })}
           </nav>
 
-          {/* Zone 3: Primary Action */}
-          <div className="hidden sm:flex items-center gap-3 shrink-0">
+          {/* Zone 3: Primary Action & Admin Button */}
+          <div className="hidden sm:flex items-center gap-2.5 shrink-0">
+            <button
+              onClick={() => handleNavClick('admin')}
+              className={`inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold rounded-lg border transition-all cursor-pointer ${
+                activePage === 'admin'
+                  ? 'bg-[#1B4332] text-white border-[#1B4332]'
+                  : 'border-[#E6DFD3] text-stone-700 bg-white hover:bg-stone-50'
+              }`}
+              title="Portal Admin"
+            >
+              <Shield className="w-3.5 h-3.5 text-[#1B4332]" />
+              <span>{isAdmin ? 'Dashboard' : 'Admin'}</span>
+            </button>
+
             <button
               onClick={() => handleNavClick('kontak')}
               className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold tracking-wide text-white bg-[#1B4332] rounded-lg hover:bg-[#143527] transition-all duration-150 shadow-xs hover:shadow-sm whitespace-nowrap cursor-pointer"
@@ -122,7 +137,14 @@ export const Navbar: React.FC<NavbarProps> = ({ activePage, onNavigate }) => {
               </button>
             );
           })}
-          <div className="pt-3 border-t border-[#E6DFD3] mt-2">
+          <div className="pt-3 border-t border-[#E6DFD3] mt-2 space-y-2">
+            <button
+              onClick={() => handleNavClick('admin')}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-stone-800 bg-white border border-[#E6DFD3] rounded-lg hover:bg-stone-50 transition-colors"
+            >
+              <Shield className="w-4 h-4 text-[#1B4332]" />
+              <span>Portal Administrator</span>
+            </button>
             <button
               onClick={() => handleNavClick('kontak')}
               className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-[#1B4332] rounded-lg hover:bg-[#143527] transition-colors"
@@ -136,3 +158,4 @@ export const Navbar: React.FC<NavbarProps> = ({ activePage, onNavigate }) => {
     </header>
   );
 };
+

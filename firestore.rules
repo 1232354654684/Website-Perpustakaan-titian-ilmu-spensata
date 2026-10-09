@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        request.auth.token.email == 'roni.ardiansyah57@guru.smk.belajar.id' ||
+        exists(/databases/$(database)/documents/admin_emails/$(request.auth.token.email))
+      );
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Public readable collections; only Admin can write
+    match /settings/{settingId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /news/{newsId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /sop/{sopId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /staff/{staffId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Admin email whitelist registry
+    match /admin_emails/{emailId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+  }
+}

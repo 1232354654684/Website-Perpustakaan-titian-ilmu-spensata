@@ -12,9 +12,10 @@ import {
   HeartHandshake,
 } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
-import { libraryProfileData } from '../data/libraryData';
+import { useLibrary } from '../context/LibraryContext';
 
 export const Profile: React.FC = () => {
+  const { settings, loading } = useLibrary();
   const facilities = [
     {
       title: 'Ruang Baca Utama Ber-AC',
@@ -77,10 +78,10 @@ export const Profile: React.FC = () => {
               Identitas Resmi
             </span>
             <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900">
-              {libraryProfileData.name} — {libraryProfileData.schoolName}
+              {settings.name} — {settings.schoolName}
             </h2>
             <p className="text-sm sm:text-base text-stone-600 leading-relaxed font-sans">
-              {libraryProfileData.about}
+              {settings.about}
             </p>
           </div>
           <div className="bg-[#FAF8F5] border border-[#E6DFD3] p-6 rounded-xl space-y-4">
@@ -89,7 +90,7 @@ export const Profile: React.FC = () => {
                 Status Akreditasi
               </p>
               <p className="font-serif text-lg font-bold text-stone-700">
-                {libraryProfileData.accreditation || '-'}
+                {settings.accreditation || '-'}
               </p>
             </div>
             <div className="pt-2 border-t border-[#E6DFD3]">
@@ -97,7 +98,7 @@ export const Profile: React.FC = () => {
                 Nomor Pokok Sekolah Nasional (NPSN)
               </p>
               <p className="font-mono text-base font-bold text-stone-700">
-                {libraryProfileData.npsn || '-'}
+                {settings.npsn || '-'}
               </p>
             </div>
             <div className="pt-2 border-t border-[#E6DFD3]">
@@ -105,7 +106,7 @@ export const Profile: React.FC = () => {
                 Motto / Semboyan
               </p>
               <p className="font-serif italic text-sm text-stone-700">
-                "{libraryProfileData.tagline}"
+                "{settings.tagline}"
               </p>
             </div>
           </div>
@@ -124,7 +125,7 @@ export const Profile: React.FC = () => {
         </div>
         <div className="bg-white rounded-2xl border border-[#E6DFD3] p-8 sm:p-10 shadow-xs prose prose-stone max-w-none text-stone-700 leading-relaxed space-y-4">
           <p className="first-letter:text-5xl first-letter:font-serif first-letter:font-bold first-letter:text-[#1B4332] first-letter:float-left first-letter:mr-3 first-letter:mt-1">
-            {libraryProfileData.history}
+            {settings.history}
           </p>
           <p>
             Perkembangan pesat dirasakan dalam lima tahun terakhir, di mana koleksi tidak hanya terfokus pada buku teks pelajaran wajib, namun diperkaya dengan ragam sastra remaja bermutu, literatur sains populer, buku motivasi, serta fasilitas otomasi terpadu. Nama <em>"Titian Ilmu"</em> terus dijunjung tinggi sebagai pengingat bahwa setiap buku yang dibuka adalah seuntai jembatan menuju peradaban yang lebih bermartabat.
@@ -144,7 +145,7 @@ export const Profile: React.FC = () => {
               Visi Perpustakaan
             </span>
             <blockquote className="font-serif text-xl sm:text-2xl font-medium leading-relaxed italic text-white pt-2">
-              "{libraryProfileData.vision}"
+              "{settings.vision}"
             </blockquote>
           </div>
           <div className="pt-8 border-t border-emerald-800/80 text-xs text-emerald-200/90">
@@ -169,7 +170,7 @@ export const Profile: React.FC = () => {
           </div>
 
           <div className="space-y-4">
-            {libraryProfileData.missions.map((mission, index) => (
+            {(settings.missions || []).map((mission, index) => (
               <div key={index} className="flex items-start gap-4">
                 <span className="w-6 h-6 rounded-full bg-[#1B4332]/10 text-[#1B4332] font-mono text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
                   {index + 1}

@@ -12,13 +12,51 @@ import {
   Info,
 } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
-import { sopData } from '../data/libraryData';
+import { useLibrary } from '../context/LibraryContext';
 import { SOPEntry } from '../types';
 
 export const SOP: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<string>(sopData[0].id);
+  const { sopList, loading } = useLibrary();
+  const [activeTab, setActiveTab] = useState<string>('');
 
-  const selectedSop = sopData.find((item) => item.id === activeTab) || sopData[0];
+  const effectiveActiveTab = activeTab || (sopList[0]?.id ?? '');
+  const selectedSop = sopList.find((item) => item.id === effectiveActiveTab) || sopList[0];
+
+  if (loading && sopList.length === 0) {
+    return (
+      <div className="space-y-12">
+        <PageHeader
+          kicker="Standar Operasional Prosedur"
+          title="SOP Pelayanan Perpustakaan"
+          description="Memuat pedoman alur layanan resmi Perpustakaan Titian Ilmu SMP Negeri 1 Tambak..."
+        />
+        <div className="p-12 text-center text-stone-500 font-sans">
+          Memuat data SOP layanan...
+        </div>
+      </div>
+    );
+  }
+
+  if (sopList.length === 0) {
+    return (
+      <div className="space-y-12">
+        <PageHeader
+          kicker="Standar Operasional Prosedur"
+          title="SOP Pelayanan Perpustakaan"
+          description="Pedoman alur layanan resmi Perpustakaan Titian Ilmu SMP Negeri 1 Tambak guna menjamin kepastian, ketertiban, dan transparansi pelayanan bagi seluruh pemustaka."
+        />
+        <div className="bg-white rounded-3xl border border-[#E6DFD3] p-12 text-center space-y-3">
+          <BookOpen className="w-10 h-10 text-stone-300 mx-auto" />
+          <h3 className="font-serif text-lg font-bold text-stone-800">
+            Dokumen SOP Belum Tersedia
+          </h3>
+          <p className="text-xs sm:text-sm text-stone-500 max-w-md mx-auto">
+            Prosedur operasional standar sedang dalam tahap pemutakhiran oleh pengelola perpustakaan.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-12">
@@ -30,8 +68,8 @@ export const SOP: React.FC = () => {
 
       {/* Navigation tabs between SOPs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-[#E6DFD3]">
-        {sopData.map((sop) => {
-          const isActive = activeTab === sop.id;
+        {sopList.map((sop) => {
+          const isActive = effectiveActiveTab === sop.id;
           return (
             <button
               key={sop.id}

@@ -12,7 +12,7 @@ import {
   Check,
 } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
-import { newsData } from '../data/libraryData';
+import { useLibrary } from '../context/LibraryContext';
 import { NewsItem } from '../types';
 import { VisualFallback } from '../components/VisualFallback';
 
@@ -22,18 +22,19 @@ interface NewsPageProps {
 }
 
 export const News: React.FC<NewsPageProps> = ({ selectedArticleId, onSelectArticle }) => {
+  const { newsList, loading } = useLibrary();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('Semua');
   const [copied, setCopied] = useState(false);
 
   // If an article is selected, display the detailed article view!
   const currentArticle = selectedArticleId
-    ? newsData.find((item) => item.id === selectedArticleId)
+    ? newsList.find((item) => item.id === selectedArticleId)
     : null;
 
   const categories = ['Semua', 'Kegiatan', 'Pengumuman', 'Literasi'];
 
-  const filteredNews = newsData.filter((item) => {
+  const filteredNews = newsList.filter((item) => {
     const matchesCategory =
       selectedCategory === 'Semua' || item.category === selectedCategory;
     const matchesSearch =
@@ -52,7 +53,7 @@ export const News: React.FC<NewsPageProps> = ({ selectedArticleId, onSelectArtic
 
   // ARTICLE DETAIL VIEW
   if (currentArticle) {
-    const otherArticles = newsData
+    const otherArticles = newsList
       .filter((item) => item.id !== currentArticle.id)
       .slice(0, 2);
 
@@ -129,11 +130,19 @@ export const News: React.FC<NewsPageProps> = ({ selectedArticleId, onSelectArtic
 
           {/* Hero Visual for Article */}
           <div className="py-2">
-            <VisualFallback
-              type="reading-club"
-              title={currentArticle.title}
-              aspectRatio="video"
-            />
+            {currentArticle.imageUrl ? (
+              <img
+                src={currentArticle.imageUrl}
+                alt={currentArticle.title}
+                className="w-full max-h-[460px] object-cover rounded-2xl border border-[#E6DFD3]"
+              />
+            ) : (
+              <VisualFallback
+                type="reading-club"
+                title={currentArticle.title}
+                aspectRatio="video"
+              />
+            )}
             <p className="text-[11px] text-stone-500 italic mt-2 text-center">
               Dokumentasi agenda literasi dan layanan Perpustakaan Titian Ilmu SMPN 1 Tambak
             </p>
@@ -288,11 +297,19 @@ export const News: React.FC<NewsPageProps> = ({ selectedArticleId, onSelectArtic
               >
                 <div>
                   <div className="p-3">
-                    <VisualFallback
-                      type={vType}
-                      title={news.title}
-                      aspectRatio="video"
-                    />
+                    {news.imageUrl ? (
+                      <img
+                        src={news.imageUrl}
+                        alt={news.title}
+                        className="w-full h-44 object-cover rounded-xl"
+                      />
+                    ) : (
+                      <VisualFallback
+                        type={vType}
+                        title={news.title}
+                        aspectRatio="video"
+                      />
+                    )}
                   </div>
                   <div className="p-5 pt-2 space-y-3">
                     {/* Unboxed clean metadata */}

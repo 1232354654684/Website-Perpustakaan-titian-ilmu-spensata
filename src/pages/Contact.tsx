@@ -13,9 +13,10 @@ import {
   HelpCircle,
 } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
-import { contactInfoData, operatingHoursData } from '../data/libraryData';
+import { useLibrary } from '../context/LibraryContext';
 
 export const Contact: React.FC = () => {
+  const { contactInfo, operatingHours } = useLibrary();
   const [formData, setFormData] = useState({
     name: '',
     emailOrWa: '',
@@ -60,10 +61,10 @@ export const Contact: React.FC = () => {
                     Alamat Lengkap
                   </p>
                   <p className="mt-0.5 leading-relaxed">
-                    {contactInfoData.address}
+                    {contactInfo.address}
                   </p>
                   <p className="text-xs text-stone-500">
-                    {contactInfoData.district}, {contactInfoData.province} {contactInfoData.postalCode}
+                    {contactInfo.district}, {contactInfo.province} {contactInfo.postalCode}
                   </p>
                 </div>
               </div>
@@ -76,7 +77,7 @@ export const Contact: React.FC = () => {
                   <p className="text-xs font-bold text-stone-900 uppercase tracking-wider">
                     Telepon Sekolah
                   </p>
-                  <p className="mt-0.5 font-mono">{contactInfoData.phone}</p>
+                  <p className="mt-0.5 font-mono">{contactInfo.phone}</p>
                 </div>
               </div>
 
@@ -88,14 +89,14 @@ export const Contact: React.FC = () => {
                   <p className="text-xs font-bold text-stone-900 uppercase tracking-wider">
                     Pos-el (Email)
                   </p>
-                  <p className="mt-0.5 font-mono text-stone-800">{contactInfoData.email}</p>
+                  <p className="mt-0.5 font-mono text-stone-800">{contactInfo.email}</p>
                 </div>
               </div>
 
               {/* WhatsApp Quick Chat Action */}
               <div className="pt-2">
                 <a
-                  href={`https://wa.me/${contactInfoData.whatsapp}?text=Halo%20Admin%20Perpustakaan%20Titian%20Ilmu%20SMPN%201%20Tambak,%20saya%20ingin%20bertanya:`}
+                  href={`https://wa.me/${contactInfo.whatsapp}?text=Halo%20Admin%20Perpustakaan%20Titian%20Ilmu%20SMPN%201%20Tambak,%20saya%20ingin%20bertanya:`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#1B4332] text-white text-xs sm:text-sm font-semibold hover:bg-[#143527] transition-all shadow-xs"
@@ -114,7 +115,7 @@ export const Contact: React.FC = () => {
               </p>
               <div className="flex items-center gap-3">
                 <a
-                  href={contactInfoData.instagram}
+                  href={contactInfo.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#FAF8F5] border border-[#E6DFD3] text-xs font-medium text-stone-700 hover:text-stone-950 hover:bg-[#F2ECE1] transition-colors"
@@ -123,7 +124,7 @@ export const Contact: React.FC = () => {
                   <span>Instagram</span>
                 </a>
                 <a
-                  href={contactInfoData.youtube}
+                  href={contactInfo.youtube}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#FAF8F5] border border-[#E6DFD3] text-xs font-medium text-stone-700 hover:text-stone-950 hover:bg-[#F2ECE1] transition-colors"
@@ -145,7 +146,7 @@ export const Contact: React.FC = () => {
             </div>
 
             <div className="space-y-2.5 text-xs">
-              {operatingHoursData.map((h, i) => (
+              {operatingHours.map((h, i) => (
                 <div
                   key={i}
                   className="flex items-center justify-between py-1.5 border-b border-[#E8E2D6] last:border-0"
@@ -318,7 +319,7 @@ export const Contact: React.FC = () => {
           </div>
 
           <a
-            href={contactInfoData.mapsDirectUrl}
+            href={contactInfo.mapsDirectUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[#E6DFD3] bg-[#FAF8F5] hover:bg-[#F2ECE1] text-xs font-medium text-stone-800 transition-colors self-start sm:self-auto"
@@ -332,7 +333,7 @@ export const Contact: React.FC = () => {
         {/* Interactive Map Embed */}
         <div className="w-full h-80 sm:h-96 rounded-2xl overflow-hidden border border-[#E6DFD3] relative bg-[#FAF8F5]">
           <iframe
-            src={contactInfoData.mapsEmbedUrl}
+            src={contactInfo.mapsEmbedUrl}
             width="100%"
             height="100%"
             style={{ border: 0 }}
