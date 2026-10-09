@@ -16,6 +16,7 @@ export interface LibraryProfile {
     activeMembers: number;
     monthlyVisitors: number;
   };
+  logoUrl?: string;
 }
 
 export interface NewsItem {

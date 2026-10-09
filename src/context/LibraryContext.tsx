@@ -26,6 +26,90 @@ import {
 
 export const BOOTSTRAP_ADMIN_EMAIL = 'roni.ardiansyah57@guru.smk.belajar.id';
 
+/**
+ * Mengubah string tanggal (Indonesian "18 Februari 2026", ISO "2026-02-18", dsb.)
+ * menjadi milidetik timestamp untuk pengurutan akurat.
+ */
+export function parseNewsDateToMillis(dateStr?: string): number {
+  if (!dateStr || typeof dateStr !== 'string') return 0;
+  const trimmed = dateStr.trim();
+  if (!trimmed || trimmed === '-') return 0;
+
+  // 1. Coba parse format ISO / standar
+  const parsedIso = Date.parse(trimmed);
+  if (!isNaN(parsedIso)) {
+    return parsedIso;
+  }
+
+  // 2. Parse format bahasa Indonesia: "18 Februari 2026" atau "2 Februari 2026"
+  const indonesianMonths: Record<string, number> = {
+    januari: 0, jan: 0,
+    februari: 1, feb: 1,
+    maret: 2, mar: 2,
+    april: 3, apr: 3,
+    mei: 4,
+    juni: 5, jun: 5,
+    juli: 6, jul: 6,
+    agustus: 7, agu: 7, ags: 7,
+    september: 8, sep: 8,
+    oktober: 9, okt: 9,
+    november: 10, nov: 10,
+    desember: 11, des: 11,
+  };
+
+  const match = trimmed.match(/^(\d{1,2})\s+([a-zA-Z]+)\s+(\d{4})/i);
+  if (match) {
+    const day = parseInt(match[1], 10);
+    const monthName = match[2].toLowerCase();
+    const year = parseInt(match[3], 10);
+    const month = indonesianMonths[monthName];
+    if (month !== undefined && !isNaN(day) && !isNaN(year)) {
+      return new Date(year, month, day).getTime();
+    }
+  }
+
+  // 3. Jika hanya ada tahun atau pola angka
+  const yearMatch = trimmed.match(/\b(20\d\d)\b/);
+  if (yearMatch) {
+    return new Date(parseInt(yearMatch[1], 10), 0, 1).getTime();
+  }
+
+  return 0;
+}
+
+/**
+ * Membandingkan 2 berita untuk pengurutan Descending (terbaru di paling atas):
+ * 1. Tanggal berita (descending). Berita tanpa tanggal bernilai 0 dan tampil di urutan paling bawah.
+ * 2. Jika tanggal sama, urutkan berdasarkan waktu dibuat (createdAt / updatedAt) descending.
+ * 3. Jika tetap sama, urutkan berdasarkan ID.
+ */
+export function compareNewsDescending(a: NewsItem, b: NewsItem): number {
+  const timeA = parseNewsDateToMillis(a.date);
+  const timeB = parseNewsDateToMillis(b.date);
+
+  // Jika tanggal berbeda
+  if (timeA !== timeB) {
+    if (timeA === 0) return 1; // a tanpa tanggal -> tempatkan di paling bawah
+    if (timeB === 0) return -1; // b tanpa tanggal -> tempatkan di paling bawah
+    return timeB - timeA; // tanggal terbaru di urutan teratas
+  }
+
+  // Jika tanggal sama atau sama-sama 0, urutkan berdasarkan waktu dibuat (createdAt / updatedAt)
+  const createdA = (a as any).createdAt ? new Date((a as any).createdAt).getTime() : 0;
+  const createdB = (b as any).createdAt ? new Date((b as any).createdAt).getTime() : 0;
+  if (createdA !== createdB) {
+    return createdB - createdA;
+  }
+
+  const updatedA = (a as any).updatedAt ? new Date((a as any).updatedAt).getTime() : 0;
+  const updatedB = (b as any).updatedAt ? new Date((b as any).updatedAt).getTime() : 0;
+  if (updatedA !== updatedB) {
+    return updatedB - updatedA;
+  }
+
+  return (b.id || '').localeCompare(a.id || '');
+}
+
 interface LibraryContextType {
   settings: LibraryProfile;
   operatingHours: OperatingHours[];
@@ -169,24 +253,53 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       }
     );
 
-    // 2. News listener
-    const unsubNews = onSnapshot(
-      collection(db, 'news'),
-      (snap) => {
-        const list: NewsItem[] = [];
-        snap.forEach((d) => {
-          list.push({ id: d.id, ...d.data() } as NewsItem);
-        });
-        setNewsList(list);
-        newsLoaded = true;
-        checkAllLoaded();
-      },
-      (err) => {
-        console.warn('News load fallback:', err);
-        newsLoaded = true;
-        checkAllLoaded();
-      }
-    );
+    // 2. News listener dengan query orderBy('date', 'desc')
+    let unsubNews: () => void = () => {};
+
+    const processNewsSnapshot = (snap: any) => {
+      const list: NewsItem[] = [];
+      snap.forEach((d: any) => {
+        list.push({ id: d.id, ...d.data() } as NewsItem);
+      });
+      // Urutkan dari yang paling baru ke paling lama (descending tanggal, tie-breaker createdAt)
+      // Data lama tanpa field tanggal tetap tampil di urutan paling bawah tanpa error
+      list.sort(compareNewsDescending);
+      setNewsList(list);
+      newsLoaded = true;
+      checkAllLoaded();
+    };
+
+    try {
+      const newsQuery = query(collection(db, 'news'), orderBy('date', 'desc'));
+      unsubNews = onSnapshot(
+        newsQuery,
+        processNewsSnapshot,
+        (queryErr) => {
+          console.warn('News orderBy query warning, beralih ke snapshot koleksi biasa:', queryErr);
+          // Fallback ke collection(db, 'news') agar data lama tanpa field tanggal tetap terpanggil dan diurutkan di paling bawah
+          unsubNews = onSnapshot(
+            collection(db, 'news'),
+            processNewsSnapshot,
+            (collErr) => {
+              console.warn('News snapshot error:', collErr);
+              newsLoaded = true;
+              checkAllLoaded();
+            }
+          );
+        }
+      );
+    } catch (err) {
+      console.warn('News query setup error, fallback ke collection:', err);
+      unsubNews = onSnapshot(
+        collection(db, 'news'),
+        processNewsSnapshot,
+        (collErr) => {
+          console.warn('News collection error:', collErr);
+          newsLoaded = true;
+          checkAllLoaded();
+        }
+      );
+    }
 
     // 3. SOP listener
     const unsubSOP = onSnapshot(
@@ -236,6 +349,19 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       unsubStaff();
     };
   }, []);
+
+  // Sinkronisasi favicon browser dinamis dengan logo perpustakaan
+  useEffect(() => {
+    let link = document.querySelector<HTMLLinkElement>("link[rel~='icon']");
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+    if (settings.logoUrl) {
+      link.href = settings.logoUrl;
+    }
+  }, [settings.logoUrl]);
 
   const loginWithGoogle = async () => {
     try {

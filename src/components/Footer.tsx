@@ -21,9 +21,17 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
           {/* Column 1: Identity & Tagline */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-800/80 border border-emerald-600/30 text-white flex items-center justify-center">
-                <BookOpen className="w-5 h-5 text-emerald-300" />
-              </div>
+              {settings.logoUrl ? (
+                <img
+                  src={settings.logoUrl}
+                  alt="Logo Perpustakaan"
+                  className="w-10 h-10 rounded-xl object-contain bg-white/10 p-1 border border-emerald-600/30"
+                />
+              ) : (
+                <div className="w-10 h-10 rounded-xl bg-emerald-800/80 border border-emerald-600/30 text-white flex items-center justify-center">
+                  <BookOpen className="w-5 h-5 text-emerald-300" />
+                </div>
+              )}
               <div>
                 <h3 className="font-serif text-lg font-bold text-white tracking-tight">
                   {settings.name}
@@ -117,9 +125,18 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
             </h4>
             <div className="space-y-2.5 text-xs text-stone-300">
               {operatingHours.slice(0, 4).map((h, idx) => (
-                <div key={idx}>
-                  <p className="font-medium text-white">{h.dayRange}</p>
-                  <p className="text-stone-400">{h.hours}</p>
+                <div key={idx} className="space-y-0.5">
+                  <div className="flex items-center justify-between">
+                    <p className="font-medium text-white">{h.dayRange}</p>
+                    <span
+                      className={`text-[10px] font-semibold px-1.5 py-0.2 rounded ${
+                        h.isOpen ? 'text-emerald-300 bg-emerald-950/60' : 'text-rose-300 bg-rose-950/60'
+                      }`}
+                    >
+                      {h.isOpen ? 'Buka' : 'Tutup'}
+                    </span>
+                  </div>
+                  <p className="text-stone-400 font-mono text-[11px]">{h.hours}</p>
                 </div>
               ))}
             </div>

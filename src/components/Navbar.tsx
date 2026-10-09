@@ -8,8 +8,9 @@ interface NavbarProps {
 }
 
 export const Navbar: React.FC<NavbarProps> = ({ activePage, onNavigate }) => {
-  const { settings, isAdmin, user } = useLibrary();
+  const { settings, operatingHours, isAdmin } = useLibrary();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showHoursModal, setShowHoursModal] = useState(false);
 
   const navLinks = [
     { id: 'beranda', label: 'Beranda' },
@@ -23,6 +24,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activePage, onNavigate }) => {
   const handleNavClick = (pageId: string) => {
     onNavigate(pageId);
     setMobileMenuOpen(false);
+    setShowHoursModal(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -35,9 +37,17 @@ export const Navbar: React.FC<NavbarProps> = ({ activePage, onNavigate }) => {
             onClick={() => handleNavClick('beranda')}
             className="flex items-center gap-3 text-left group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#1B4332] rounded-lg p-1 shrink-0 cursor-pointer"
           >
-            <div className="w-10 h-10 rounded-xl bg-[#1B4332] text-white flex items-center justify-center shadow-xs transition-transform duration-200 group-hover:scale-105">
-              <BookOpen className="w-5 h-5 text-emerald-100" strokeWidth={2} />
-            </div>
+            {settings.logoUrl ? (
+              <img
+                src={settings.logoUrl}
+                alt="Logo Perpustakaan Titian Ilmu"
+                className="w-10 h-10 rounded-xl object-contain shadow-xs transition-transform duration-200 group-hover:scale-105"
+              />
+            ) : (
+              <div className="w-10 h-10 rounded-xl bg-[#1B4332] text-white flex items-center justify-center shadow-xs transition-transform duration-200 group-hover:scale-105">
+                <BookOpen className="w-5 h-5 text-emerald-100" strokeWidth={2} />
+              </div>
+            )}
             <div className="flex flex-col">
               <span className="font-serif text-lg font-bold text-stone-900 tracking-tight leading-tight group-hover:text-[#1B4332] transition-colors whitespace-nowrap">
                 {settings.shortName || 'Titian Ilmu'}
@@ -87,7 +97,7 @@ export const Navbar: React.FC<NavbarProps> = ({ activePage, onNavigate }) => {
             </button>
 
             <button
-              onClick={() => handleNavClick('kontak')}
+              onClick={() => setShowHoursModal(true)}
               className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold tracking-wide text-white bg-[#1B4332] rounded-lg hover:bg-[#143527] transition-all duration-150 shadow-xs hover:shadow-sm whitespace-nowrap cursor-pointer"
             >
               <Clock className="w-3.5 h-3.5 text-emerald-200" />
@@ -146,12 +156,93 @@ export const Navbar: React.FC<NavbarProps> = ({ activePage, onNavigate }) => {
               <span>Portal Administrator</span>
             </button>
             <button
-              onClick={() => handleNavClick('kontak')}
+              onClick={() => {
+                setMobileMenuOpen(false);
+                setShowHoursModal(true);
+              }}
               className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-[#1B4332] rounded-lg hover:bg-[#143527] transition-colors"
             >
               <Clock className="w-4 h-4 text-emerald-200" />
-              <span>Cek Jam Layanan & Kontak</span>
+              <span>Cek Jam Layanan (Sabtu & Minggu Tutup)</span>
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Popup Modal Jam Layanan */}
+      {showHoursModal && (
+        <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white rounded-3xl border border-[#E6DFD3] max-w-lg w-full p-6 sm:p-7 space-y-5 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[#E6DFD3] pb-3.5">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-[#1B4332] text-white flex items-center justify-center">
+                  <Clock className="w-4 h-4 text-emerald-200" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-lg font-bold text-stone-900">
+                    Jadwal Jam Layanan Pemustaka
+                  </h3>
+                  <p className="text-[11px] text-stone-500 font-sans">
+                    {settings.name} — {settings.schoolName}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowHoursModal(false)}
+                className="p-1 rounded-lg text-stone-400 hover:text-stone-700 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-2.5">
+              {operatingHours.map((slot, idx) => (
+                <div
+                  key={idx}
+                  className={`p-3 rounded-xl border flex items-center justify-between ${
+                    slot.isOpen
+                      ? 'bg-[#FAF8F5] border-[#E8E2D6]'
+                      : 'bg-stone-50 border-stone-200 text-stone-600'
+                  }`}
+                >
+                  <div className="space-y-0.5">
+                    <p className="text-xs font-bold text-stone-800">{slot.dayRange}</p>
+                    {slot.breakTime && (
+                      <p className="text-[11px] text-stone-500 font-sans">{slot.breakTime}</p>
+                    )}
+                    {slot.notes && (
+                      <p className="text-[10px] text-stone-400 italic font-sans">{slot.notes}</p>
+                    )}
+                  </div>
+                  <div className="text-right">
+                    <span
+                      className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full mb-1 ${
+                        slot.isOpen
+                          ? 'bg-emerald-100 text-emerald-800'
+                          : 'bg-rose-100 text-rose-800'
+                      }`}
+                    >
+                      {slot.isOpen ? 'Buka' : 'Tutup'}
+                    </span>
+                    <p className="font-mono text-xs font-bold text-stone-900">{slot.hours}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="pt-2 border-t border-[#E6DFD3] flex items-center justify-between">
+              <span className="text-[11px] text-stone-500">
+                Sabtu dan Minggu pelayanan tatap muka tutup.
+              </span>
+              <button
+                type="button"
+                onClick={() => handleNavClick('kontak')}
+                className="text-xs font-semibold text-[#1B4332] hover:underline cursor-pointer"
+              >
+                Halaman Kontak & Peta →
+              </button>
+            </div>
           </div>
         </div>
       )}

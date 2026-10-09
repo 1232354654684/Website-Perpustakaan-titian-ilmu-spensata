@@ -30,7 +30,8 @@ export const libraryProfileData: LibraryProfile = {
     totalTitles: 2980,
     activeMembers: 780,
     monthlyVisitors: 1420
-  }
+  },
+  logoUrl: ''
 };
 
 export const operatingHoursData: OperatingHours[] = [
@@ -50,14 +51,15 @@ export const operatingHoursData: OperatingHours[] = [
   },
   {
     dayRange: 'Sabtu',
-    hours: '07.30 – 13.00 WIB',
-    breakTime: 'Istirahat: 11.45 – 12.15 WIB',
-    isOpen: true,
-    notes: 'Kegiatan ekstrakurikuler literasi dan klub baca'
+    hours: 'Tutup',
+    breakTime: '-',
+    isOpen: false,
+    notes: 'Pelayanan tatap muka tutup'
   },
   {
     dayRange: 'Minggu & Hari Libur Nasional',
     hours: 'Tutup',
+    breakTime: '-',
     isOpen: false,
     notes: 'Pelayanan tatap muka libur'
   }

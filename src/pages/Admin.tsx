@@ -22,9 +22,10 @@ import {
   RefreshCw,
   Info,
   Check,
+  BookOpen,
 } from 'lucide-react';
 import { useLibrary, BOOTSTRAP_ADMIN_EMAIL } from '../context/LibraryContext';
-import { uploadAndProcessPhoto, validateImageFile, ImageUploadResult } from '../lib/firebase';
+import { uploadAndProcessPhoto, validateImageFile, ImageUploadResult, blobToBase64 } from '../lib/firebase';
 import { NewsItem, SOPEntry, StaffMember, OperatingHours, ContactInfo, LibraryProfile } from '../types';
 
 interface ConfirmDialogState {
@@ -84,12 +85,83 @@ export const Admin: React.FC = () => {
   const [hoursForm, setHoursForm] = useState<OperatingHours[]>(operatingHours);
   const [contactForm, setContactForm] = useState<ContactInfo>(contactInfo);
 
+  // States for Logo Upload di Pengaturan Umum
+  const [logoUploading, setLogoUploading] = useState(false);
+  const [logoUploadError, setLogoUploadError] = useState<string | null>(null);
+  const logoFileInputRef = useRef<HTMLInputElement | null>(null);
+
   // Sync settings form when settings load from Firestore
   React.useEffect(() => {
     setProfileForm(settings);
     setHoursForm(operatingHours);
     setContactForm(contactInfo);
   }, [settings, operatingHours, contactInfo]);
+
+  // Handler Upload Logo Perpustakaan
+  const handleLogoFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLogoUploadError(null);
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validasi format logo (PNG, JPG, WebP, SVG)
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/webp', 'image/svg+xml'];
+    const validExts = /\.(png|jpe?g|webp|svg)$/i;
+    if (!validTypes.includes(file.type.toLowerCase()) && !validExts.test(file.name)) {
+      setLogoUploadError('Format logo tidak didukung. Harap pilih file gambar PNG, JPG, WebP, atau SVG.');
+      if (logoFileInputRef.current) logoFileInputRef.current.value = '';
+      return;
+    }
+
+    setLogoUploading(true);
+    try {
+      let finalLogoUrl = '';
+      if (file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg')) {
+        // SVG langsung dijadikan Data URL bersih
+        finalLogoUrl = await blobToBase64(file);
+      } else {
+        // Kompresi otomatis target < 200 KB
+        const uploadResult = await uploadAndProcessPhoto(file, 'logos');
+        finalLogoUrl = uploadResult.url;
+      }
+
+      setProfileForm((prev) => ({ ...prev, logoUrl: finalLogoUrl }));
+      showToast('Logo berhasil diunggah! Simpan pengaturan untuk menerapkan ke seluruh halaman.');
+    } catch (err: any) {
+      console.error('[handleLogoFileSelect] Error:', err);
+      setLogoUploadError('Gagal mengunggah logo: ' + (err.message || 'Terjadi kesalahan sistem.'));
+    } finally {
+      setLogoUploading(false);
+      if (logoFileInputRef.current) logoFileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveLogo = () => {
+    setProfileForm((prev) => ({ ...prev, logoUrl: '' }));
+    if (logoFileInputRef.current) logoFileInputRef.current.value = '';
+    showToast('Logo dihapus. Tampilan website kembali menggunakan ikon buku bawaan.');
+  };
+
+  // Handler Manipulasi Baris Jam Layanan
+  const handleAddHourRow = () => {
+    setHoursForm((prev) => [
+      ...prev,
+      {
+        dayRange: 'Hari Baru',
+        hours: '08.00 – 14.00 WIB',
+        breakTime: '-',
+        isOpen: true,
+        notes: '',
+      },
+    ]);
+  };
+
+  const handleRemoveHourRow = (index: number) => {
+    if (hoursForm.length <= 1) {
+      showToast('Minimal harus ada 1 baris jadwal layanan.', 'info');
+      return;
+    }
+    setHoursForm((prev) => prev.filter((_, i) => i !== index));
+  };
 
   // States for News Modal/Editing
   const [editingNews, setEditingNews] = useState<NewsItem | null>(null);
@@ -639,6 +711,99 @@ export const Admin: React.FC = () => {
       {/* TAB 1: PENGATURAN UMUM */}
       {activeTab === 'settings' && (
         <form onSubmit={handleSaveSettings} className="space-y-8">
+          {/* Section: Logo Perpustakaan */}
+          <div className="bg-white rounded-3xl border border-[#E6DFD3] p-6 sm:p-8 space-y-5 shadow-xs">
+            <div className="flex items-center justify-between border-b border-[#E6DFD3] pb-3">
+              <div>
+                <h3 className="font-serif text-xl font-bold text-stone-900">
+                  Logo & Identitas Visual Perpustakaan
+                </h3>
+                <p className="text-xs text-stone-500 font-sans mt-0.5">
+                  Logo ini akan menggantikan ikon buku bawaan di navbar, footer, dan favicon browser.
+                </p>
+              </div>
+              <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200">
+                {profileForm.logoUrl ? 'Logo Kustom Aktif' : 'Ikon Buku Bawaan'}
+              </span>
+            </div>
+
+            {logoUploadError && (
+              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-start gap-2">
+                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-600" />
+                <span>{logoUploadError}</span>
+              </div>
+            )}
+
+            <input
+              ref={logoFileInputRef}
+              type="file"
+              accept=".png,.jpg,.jpeg,.webp,.svg,image/png,image/jpeg,image/webp,image/svg+xml"
+              onChange={handleLogoFileSelect}
+              className="hidden"
+            />
+
+            <div className="flex flex-col sm:flex-row sm:items-center gap-6 p-4 rounded-2xl bg-[#FAF8F5] border border-[#E6DFD3]">
+              {/* Logo Preview (object-contain, proporsional, tidak gepeng) */}
+              <div className="relative w-24 h-24 rounded-2xl overflow-hidden bg-white border-2 border-stone-200 p-2 flex items-center justify-center shrink-0 shadow-2xs">
+                {profileForm.logoUrl ? (
+                  <img
+                    src={profileForm.logoUrl}
+                    alt="Logo Perpustakaan"
+                    className="w-full h-full object-contain"
+                  />
+                ) : (
+                  <div className="w-full h-full rounded-xl bg-[#1B4332] text-white flex items-center justify-center">
+                    <BookOpen className="w-8 h-8 text-emerald-200" strokeWidth={2} />
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2 flex-1">
+                <div>
+                  <h4 className="text-sm font-bold text-stone-900 font-sans">
+                    {profileForm.logoUrl ? 'Logo Resmi Perpustakaan Titian Ilmu' : 'Belum Ada Logo yang Diunggah'}
+                  </h4>
+                  <p className="text-xs text-stone-600 font-sans leading-relaxed">
+                    Dukung format PNG, JPG, WebP, atau SVG transparan. Gambar otomatis dikompres di browser (&lt; 200 KB) agar cepat dimuat di HP.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <button
+                    type="button"
+                    disabled={logoUploading}
+                    onClick={() => logoFileInputRef.current?.click()}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-[#E6DFD3] bg-white hover:bg-stone-50 text-xs font-semibold text-stone-800 transition-colors cursor-pointer shadow-2xs disabled:opacity-50"
+                  >
+                    {logoUploading ? (
+                      <>
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        <span>Mengompres & Mengunggah...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="w-3.5 h-3.5 text-[#1B4332]" />
+                        <span>{profileForm.logoUrl ? 'Ganti Logo' : 'Pilih File Logo'}</span>
+                      </>
+                    )}
+                  </button>
+
+                  {profileForm.logoUrl && (
+                    <button
+                      type="button"
+                      disabled={logoUploading}
+                      onClick={handleRemoveLogo}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Hapus Logo</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="bg-white rounded-3xl border border-[#E6DFD3] p-6 sm:p-8 space-y-6 shadow-xs">
             <h3 className="font-serif text-xl font-bold text-stone-900 border-b border-[#E6DFD3] pb-3">
               Identitas Perpustakaan & Tagline
@@ -734,51 +899,106 @@ export const Admin: React.FC = () => {
 
           {/* Jam Layanan */}
           <div className="bg-white rounded-3xl border border-[#E6DFD3] p-6 sm:p-8 space-y-4 shadow-xs">
-            <h3 className="font-serif text-xl font-bold text-stone-900 border-b border-[#E6DFD3] pb-3">
-              Jadwal Jam Layanan
-            </h3>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E6DFD3] pb-3">
+              <div>
+                <h3 className="font-serif text-xl font-bold text-stone-900">
+                  Jadwal Jam Layanan Pemustaka
+                </h3>
+                <p className="text-xs text-stone-500 font-sans mt-0.5">
+                  Atur jam buka hari kerja dan hari tutup (Sabtu & Minggu tutup). Perubahan tampil otomatis di seluruh halaman.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleAddHourRow}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E6DFD3] bg-[#FAF8F5] hover:bg-[#F2ECE1] text-xs font-semibold text-stone-700 transition-colors cursor-pointer self-start sm:self-auto"
+              >
+                <Plus className="w-3.5 h-3.5 text-[#1B4332]" />
+                <span>Tambah Baris Jadwal</span>
+              </button>
+            </div>
 
             <div className="space-y-3">
               {hoursForm.map((slot, idx) => (
-                <div key={idx} className="grid grid-cols-1 sm:grid-cols-3 gap-3 p-3.5 rounded-xl bg-[#FAF8F5] border border-[#E6DFD3]">
-                  <div>
-                    <label className="text-[11px] font-semibold text-stone-600">Hari</label>
-                    <input
-                      type="text"
-                      value={slot.dayRange}
-                      onChange={(e) => {
-                        const copy = [...hoursForm];
-                        copy[idx].dayRange = e.target.value;
-                        setHoursForm(copy);
-                      }}
-                      className="w-full mt-1 px-3 py-1.5 rounded-lg border border-[#E6DFD3] bg-white text-xs text-stone-900"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[11px] font-semibold text-stone-600">Jam Operasional</label>
-                    <input
-                      type="text"
-                      value={slot.hours}
-                      onChange={(e) => {
-                        const copy = [...hoursForm];
-                        copy[idx].hours = e.target.value;
-                        setHoursForm(copy);
-                      }}
-                      className="w-full mt-1 px-3 py-1.5 rounded-lg border border-[#E6DFD3] bg-white text-xs text-stone-900 font-mono"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-[11px] font-semibold text-stone-600">Keterangan / Istirahat</label>
-                    <input
-                      type="text"
-                      value={slot.notes || slot.breakTime || ''}
-                      onChange={(e) => {
-                        const copy = [...hoursForm];
-                        copy[idx].notes = e.target.value;
-                        setHoursForm(copy);
-                      }}
-                      className="w-full mt-1 px-3 py-1.5 rounded-lg border border-[#E6DFD3] bg-white text-xs text-stone-900"
-                    />
+                <div
+                  key={idx}
+                  className={`p-4 rounded-2xl border transition-all ${
+                    slot.isOpen ? 'bg-[#FAF8F5] border-[#E6DFD3]' : 'bg-stone-50 border-stone-200'
+                  }`}
+                >
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+                    <div>
+                      <label className="text-[11px] font-semibold text-stone-700 block">Hari</label>
+                      <input
+                        type="text"
+                        value={slot.dayRange}
+                        onChange={(e) => {
+                          const copy = [...hoursForm];
+                          copy[idx].dayRange = e.target.value;
+                          setHoursForm(copy);
+                        }}
+                        className="w-full mt-1 px-3 py-2 rounded-xl border border-[#E6DFD3] bg-white text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#1B4332]"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] font-semibold text-stone-700 block">Status Layanan</label>
+                      <select
+                        value={slot.isOpen ? 'open' : 'closed'}
+                        onChange={(e) => {
+                          const copy = [...hoursForm];
+                          copy[idx].isOpen = e.target.value === 'open';
+                          if (e.target.value === 'closed' && copy[idx].hours !== 'Tutup') {
+                            copy[idx].hours = 'Tutup';
+                          }
+                          setHoursForm(copy);
+                        }}
+                        className="w-full mt-1 px-3 py-2 rounded-xl border border-[#E6DFD3] bg-white text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#1B4332]"
+                      >
+                        <option value="open">Buka (Layanan Aktif)</option>
+                        <option value="closed">Tutup (Libur)</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="text-[11px] font-semibold text-stone-700 block">Jam Operasional</label>
+                      <input
+                        type="text"
+                        value={slot.hours}
+                        onChange={(e) => {
+                          const copy = [...hoursForm];
+                          copy[idx].hours = e.target.value;
+                          setHoursForm(copy);
+                        }}
+                        className="w-full mt-1 px-3 py-2 rounded-xl border border-[#E6DFD3] bg-white text-xs text-stone-900 font-mono focus:outline-none focus:ring-1 focus:ring-[#1B4332]"
+                      />
+                    </div>
+
+                    <div className="flex items-end gap-2">
+                      <div className="flex-1">
+                        <label className="text-[11px] font-semibold text-stone-700 block">Keterangan / Istirahat</label>
+                        <input
+                          type="text"
+                          value={slot.notes || slot.breakTime || ''}
+                          onChange={(e) => {
+                            const copy = [...hoursForm];
+                            copy[idx].notes = e.target.value;
+                            setHoursForm(copy);
+                          }}
+                          placeholder="Misal: Pelayanan tatap muka libur"
+                          className="w-full mt-1 px-3 py-2 rounded-xl border border-[#E6DFD3] bg-white text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#1B4332]"
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveHourRow(idx)}
+                        className="p-2 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer shrink-0"
+                        title="Hapus baris jadwal"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}

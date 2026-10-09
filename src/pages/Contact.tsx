@@ -149,12 +149,22 @@ export const Contact: React.FC = () => {
               {operatingHours.map((h, i) => (
                 <div
                   key={i}
-                  className="flex items-center justify-between py-1.5 border-b border-[#E8E2D6] last:border-0"
+                  className="flex items-center justify-between py-2 border-b border-[#E8E2D6] last:border-0"
                 >
-                  <span className="font-medium text-stone-700">{h.dayRange}</span>
-                  <span className="font-mono font-bold text-stone-900">
-                    {h.hours}
-                  </span>
+                  <div className="space-y-0.5">
+                    <span className="font-semibold text-stone-800 block">{h.dayRange}</span>
+                    {h.notes && <span className="text-[10px] text-stone-500 italic block">{h.notes}</span>}
+                  </div>
+                  <div className="text-right">
+                    <span
+                      className={`inline-block text-[10px] font-semibold px-2 py-0.5 rounded-full mb-0.5 ${
+                        h.isOpen ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
+                      }`}
+                    >
+                      {h.isOpen ? 'Buka' : 'Tutup'}
+                    </span>
+                    <p className="font-mono font-bold text-stone-900">{h.hours}</p>
+                  </div>
                 </div>
               ))}
             </div>

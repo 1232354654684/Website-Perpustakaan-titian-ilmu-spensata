@@ -140,7 +140,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                 Informasi Jam Layanan Pemustaka
               </h3>
               <p className="text-xs text-stone-500">
-                Buka setiap hari kerja sekolah untuk layanan sirkulasi, referensi, dan ruang baca.
+                Buka setiap hari kerja (Senin–Jumat) untuk layanan sirkulasi dan baca. Sabtu & Minggu tutup.
               </p>
             </div>
           </div>
@@ -160,7 +160,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
               className={`p-4 rounded-xl border transition-colors ${
                 slot.isOpen
                   ? 'bg-[#FAF8F5] border-[#E8E2D6]'
-                  : 'bg-stone-50 border-stone-200 opacity-75'
+                  : 'bg-stone-50 border-stone-200'
               }`}
             >
               <div className="flex items-center justify-between mb-2">
@@ -171,7 +171,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                   className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
                     slot.isOpen
                       ? 'bg-emerald-100 text-emerald-800'
-                      : 'bg-stone-200 text-stone-700'
+                      : 'bg-rose-100 text-rose-800'
                   }`}
                 >
                   {slot.isOpen ? 'Buka' : 'Tutup'}

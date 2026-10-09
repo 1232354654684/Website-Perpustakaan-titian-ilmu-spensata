@@ -33,6 +33,7 @@
         "missions": { "type": "array" },
         "goals": { "type": "array" },
         "stats": { "type": "object" },
+        "logoUrl": { "type": "string" },
         "operatingHours": { "type": "array" },
         "contactInfo": { "type": "object" },
         "updatedAt": { "type": "string" }
