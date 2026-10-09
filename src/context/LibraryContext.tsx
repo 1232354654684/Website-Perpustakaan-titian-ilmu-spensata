@@ -295,32 +295,66 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const id = `news_${Date.now()}`;
     const path = `news/${id}`;
     try {
+      console.log(`[addNews] Menyimpan berita baru ${id}:`, item);
       await setDoc(doc(db, 'news', id), {
         ...item,
         createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
       });
+      console.log(`[addNews] Berhasil menyimpan berita baru ${id}`);
     } catch (err) {
+      console.error(`[addNews] Gagal membuat berita ${id}:`, err);
       handleFirestoreError(err, OperationType.CREATE, path);
     }
   };
 
   const updateNews = async (id: string, item: Partial<NewsItem>) => {
+    if (!id || typeof id !== 'string') {
+      console.error('[updateNews] ID dokumen berita kosong atau tidak valid:', id);
+      throw new Error('ID dokumen berita tidak valid atau kosong.');
+    }
     const path = `news/${id}`;
     try {
-      await updateDoc(doc(db, 'news', id), {
-        ...item,
-        updatedAt: new Date().toISOString(),
+      console.log(`[updateNews] Memperbarui dokumen berita dengan ID "${id}":`, item);
+      const cleanItem: Record<string, any> = { ...item };
+      delete cleanItem.id;
+      cleanItem.updatedAt = new Date().toISOString();
+
+      // Hapus properti bernilai undefined agar Firestore tidak error
+      Object.keys(cleanItem).forEach((key) => {
+        if (cleanItem[key] === undefined) {
+          delete cleanItem[key];
+        }
       });
+
+      const newsDocRef = doc(db, 'news', id);
+      // Panggil updateDoc sesuai spesifikasi; jika dokumen lokal/baru belum ada, gunakan setDoc merge
+      try {
+        await updateDoc(newsDocRef, cleanItem);
+        console.log(`[updateNews] updateDoc berhasil untuk ID: ${id}`);
+      } catch (updateErr: any) {
+        console.warn(`[updateNews] updateDoc gagal (${updateErr?.message}), mencoba setDoc dengan merge untuk ID: ${id}`);
+        await setDoc(newsDocRef, cleanItem, { merge: true });
+        console.log(`[updateNews] setDoc merge berhasil untuk ID: ${id}`);
+      }
     } catch (err) {
+      console.error(`[updateNews] Gagal memperbarui berita ${id}:`, err);
       handleFirestoreError(err, OperationType.UPDATE, path);
     }
   };
 
   const deleteNews = async (id: string) => {
+    if (!id) {
+      console.error('[deleteNews] ID dokumen berita kosong.');
+      throw new Error('ID dokumen berita tidak valid.');
+    }
     const path = `news/${id}`;
     try {
+      console.log(`[deleteNews] Memanggil deleteDoc pada dokumen: ${path}`);
       await deleteDoc(doc(db, 'news', id));
+      console.log(`[deleteNews] Berhasil menghapus dokumen: ${path}`);
     } catch (err) {
+      console.error(`[deleteNews] Gagal menghapus dokumen ${id}:`, err);
       handleFirestoreError(err, OperationType.DELETE, path);
     }
   };

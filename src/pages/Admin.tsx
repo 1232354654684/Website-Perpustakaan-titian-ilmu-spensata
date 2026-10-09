@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Lock,
   LogOut,
@@ -6,8 +6,6 @@ import {
   Plus,
   Trash2,
   Edit2,
-  ArrowUp,
-  ArrowDown,
   Upload,
   Image as ImageIcon,
   CheckCircle2,
@@ -18,14 +16,31 @@ import {
   Shield,
   Clock,
   Sparkles,
-  ExternalLink,
-  ChevronRight,
   Database,
   X,
+  Loader2,
+  RefreshCw,
+  Info,
+  Check,
 } from 'lucide-react';
 import { useLibrary, BOOTSTRAP_ADMIN_EMAIL } from '../context/LibraryContext';
-import { uploadImageToStorage } from '../lib/firebase';
+import { uploadAndProcessPhoto, validateImageFile, ImageUploadResult } from '../lib/firebase';
 import { NewsItem, SOPEntry, StaffMember, OperatingHours, ContactInfo, LibraryProfile } from '../types';
+
+interface ConfirmDialogState {
+  isOpen: boolean;
+  type: 'deleteNews' | 'deleteSOP' | 'deleteStaff' | 'removeAdmin' | 'seed';
+  id: string;
+  title: string;
+  message: string;
+  targetName?: string;
+}
+
+interface ToastState {
+  type: 'success' | 'error' | 'info';
+  message: string;
+  details?: string;
+}
 
 export const Admin: React.FC = () => {
   const {
@@ -57,8 +72,12 @@ export const Admin: React.FC = () => {
 
   const [activeTab, setActiveTab] = useState<'settings' | 'news' | 'sop' | 'staff' | 'admins'>('settings');
   const [authError, setAuthError] = useState<string | null>(null);
-  const [successToast, setSuccessToast] = useState<string | null>(null);
+  const [toast, setToast] = useState<ToastState | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
+
+  // Modal konfirmasi khusus (pengganti window.confirm / alert)
+  const [confirmDialog, setConfirmDialog] = useState<ConfirmDialogState | null>(null);
+  const [isConfirmingAction, setIsConfirmingAction] = useState(false);
 
   // States for Settings Form
   const [profileForm, setProfileForm] = useState<LibraryProfile>(settings);
@@ -77,6 +96,11 @@ export const Admin: React.FC = () => {
   const [isNewsModalOpen, setIsNewsModalOpen] = useState(false);
   const [newsImageFile, setNewsImageFile] = useState<File | null>(null);
   const [newsImagePreview, setNewsImagePreview] = useState<string>('');
+  const [newsImageError, setNewsImageError] = useState<string | null>(null);
+  const [newsUploadStatus, setNewsUploadStatus] = useState<string>('');
+  const [newsFormError, setNewsFormError] = useState<string | null>(null);
+  const [isSubmittingNews, setIsSubmittingNews] = useState(false);
+  const newsFileInputRef = useRef<HTMLInputElement | null>(null);
 
   // States for SOP Modal/Editing
   const [editingSOP, setEditingSOP] = useState<SOPEntry | null>(null);
@@ -87,13 +111,27 @@ export const Admin: React.FC = () => {
   const [isStaffModalOpen, setIsStaffModalOpen] = useState(false);
   const [staffImageFile, setStaffImageFile] = useState<File | null>(null);
   const [staffImagePreview, setStaffImagePreview] = useState<string>('');
+  const [staffImageError, setStaffImageError] = useState<string | null>(null);
+  const [staffUploadStatus, setStaffUploadStatus] = useState<string>('');
+  const [isSubmittingStaff, setIsSubmittingStaff] = useState(false);
+  const staffFileInputRef = useRef<HTMLInputElement | null>(null);
 
   // New Admin email input
   const [newAdminEmail, setNewAdminEmail] = useState('');
 
-  const triggerToast = (msg: string) => {
-    setSuccessToast(msg);
-    setTimeout(() => setSuccessToast(null), 3500);
+  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'success', details?: string) => {
+    setToast({ type, message, details });
+    setTimeout(() => {
+      setToast((prev) => (prev?.message === message ? null : prev));
+    }, 4500);
+  };
+
+  // Helper untuk membuat slug ramah URL
+  const generateSlug = (text: string) => {
+    return text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
   };
 
   // --- AUTH CHECK SCREENS ---
@@ -129,6 +167,7 @@ export const Admin: React.FC = () => {
                 try {
                   await loginWithGoogle();
                 } catch (err: any) {
+                  console.error('Login error:', err);
                   setAuthError(err.message || 'Gagal masuk akun. Pastikan koneksi stabil.');
                 }
               }}
@@ -191,41 +230,300 @@ export const Admin: React.FC = () => {
     );
   }
 
-  // --- DASHBOARD ADMIN UTAMA ---
+  // --- HANDLER SIMPAN PENGATURAN UMUM ---
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setActionLoading(true);
     try {
       await updateSettings(profileForm, hoursForm, contactForm);
-      triggerToast('Pengaturan umum perpustakaan berhasil diperbarui!');
+      showToast('Pengaturan umum perpustakaan berhasil diperbarui!');
     } catch (err: any) {
-      alert('Gagal menyimpan pengaturan: ' + err.message);
+      console.error('[handleSaveSettings] Error:', err);
+      showToast('Gagal menyimpan pengaturan: ' + (err.message || 'Terjadi kesalahan.'), 'error');
     } finally {
       setActionLoading(false);
     }
   };
 
-  const handleSeedData = async () => {
-    if (confirm('Inisialisasi data contoh ke database Firestore? Tindakan ini akan mengisi berita, SOP, dan struktur staf awal.')) {
-      setActionLoading(true);
-      try {
-        await seedInitialDataIfEmpty();
-        triggerToast('Data awal berhasil diisi ke Firestore!');
-      } catch (err: any) {
-        alert('Gagal inisialisasi: ' + err.message);
-      } finally {
-        setActionLoading(false);
+  // --- EKSEKUSI DIALOG KONFIRMASI (HAPUS BERITA, SOP, STAF, ADMIN, SEED) ---
+  const handleExecuteConfirmedAction = async () => {
+    if (!confirmDialog) return;
+    setIsConfirmingAction(true);
+    try {
+      switch (confirmDialog.type) {
+        case 'deleteNews':
+          console.log(`[Admin] Menghapus dokumen berita ID: ${confirmDialog.id}`);
+          await deleteNews(confirmDialog.id);
+          showToast(`Berita "${confirmDialog.targetName || ''}" berhasil dihapus.`);
+          break;
+        case 'deleteSOP':
+          console.log(`[Admin] Menghapus dokumen SOP ID: ${confirmDialog.id}`);
+          await deleteSOP(confirmDialog.id);
+          showToast(`SOP "${confirmDialog.targetName || ''}" berhasil dihapus.`);
+          break;
+        case 'deleteStaff':
+          console.log(`[Admin] Menghapus dokumen staf ID: ${confirmDialog.id}`);
+          await deleteStaff(confirmDialog.id);
+          showToast(`Data pengelola "${confirmDialog.targetName || ''}" berhasil dihapus.`);
+          break;
+        case 'removeAdmin':
+          console.log(`[Admin] Mencabut akses admin untuk: ${confirmDialog.id}`);
+          await removeAdminEmail(confirmDialog.id);
+          showToast(`Akses admin untuk "${confirmDialog.id}" telah dicabut.`);
+          break;
+        case 'seed':
+          console.log('[Admin] Menginisialisasi data awal Firestore...');
+          await seedInitialDataIfEmpty();
+          showToast('Data awal berhasil diinisialisasi ke Firestore!');
+          break;
       }
+      setConfirmDialog(null);
+    } catch (err: any) {
+      console.error('[handleExecuteConfirmedAction] Error:', err);
+      showToast('Gagal menjalankan aksi: ' + (err.message || 'Terjadi kesalahan sistem.'), 'error');
+    } finally {
+      setIsConfirmingAction(false);
+    }
+  };
+
+  // --- HANDLER UPLOAD FOTO BERITA (DENGAN KOMPRESI & VALIDASI) ---
+  const handleNewsFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNewsImageError(null);
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      // Validasi format JPG, PNG, WebP
+      validateImageFile(file);
+      setNewsImageFile(file);
+      const previewUrl = URL.createObjectURL(file);
+      setNewsImagePreview(previewUrl);
+    } catch (valErr: any) {
+      console.warn('[NewsFile] Format ditolak:', valErr);
+      setNewsImageError(valErr.message || 'Format file bukan gambar yang didukung.');
+      if (newsFileInputRef.current) newsFileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveNewsPhoto = () => {
+    setNewsImageFile(null);
+    setNewsImagePreview('');
+    setNewsImageError(null);
+    if (editingNews) {
+      setEditingNews({ ...editingNews, imageUrl: '' });
+    }
+    if (newsFileInputRef.current) newsFileInputRef.current.value = '';
+  };
+
+  // --- HANDLER SUBMIT BERITA (TAMBAH / EDIT DENGAN updateDoc) ---
+  const handleSaveNews = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingNews) return;
+
+    if (!editingNews.title.trim()) {
+      setNewsFormError('Judul berita tidak boleh kosong.');
+      return;
+    }
+    if (!editingNews.excerpt.trim()) {
+      setNewsFormError('Cuplikan ringkas berita tidak boleh kosong.');
+      return;
+    }
+
+    setNewsFormError(null);
+    setIsSubmittingNews(true);
+    setNewsUploadStatus('Menyiapkan data berita...');
+
+    try {
+      let finalImageUrl = editingNews.imageUrl || '';
+      let usedFallback = false;
+      let fallbackSize = 0;
+
+      // 1. Jika pengguna memilih file foto baru
+      if (newsImageFile) {
+        setNewsUploadStatus('Mengompresi gambar di browser (maks. 1280px, ~80%, <300 KB)...');
+        console.log('[handleSaveNews] Memproses upload foto baru:', newsImageFile.name);
+
+        const uploadResult: ImageUploadResult = await uploadAndProcessPhoto(newsImageFile, 'news_covers');
+        finalImageUrl = uploadResult.url;
+
+        if (uploadResult.source === 'base64_fallback') {
+          usedFallback = true;
+          fallbackSize = uploadResult.sizeKB;
+          console.info(`[handleSaveNews] Menggunakan cadangan Base64 Firestore (${uploadResult.sizeKB} KB)`);
+        } else {
+          console.info('[handleSaveNews] Berhasil mengunggah ke Firebase Storage:', uploadResult.url);
+        }
+      } else if (!newsImagePreview) {
+        // Pengguna menghapus foto
+        finalImageUrl = '';
+      }
+
+      setNewsUploadStatus('Menyimpan dokumen ke database Firestore...');
+
+      // Olah paragraf konten
+      const processedContent = Array.isArray(editingNews.content)
+        ? editingNews.content.filter((p) => typeof p === 'string' && p.trim().length > 0)
+        : typeof editingNews.content === 'string'
+        ? (editingNews.content as string)
+            .split('\n\n')
+            .map((p) => p.trim())
+            .filter(Boolean)
+        : [''];
+
+      const payloadData: Omit<NewsItem, 'id'> = {
+        title: editingNews.title.trim(),
+        slug: editingNews.slug?.trim() || generateSlug(editingNews.title.trim()),
+        category: editingNews.category || 'Kegiatan',
+        date: editingNews.date || new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' }),
+        author: editingNews.author?.trim() || user.displayName || 'Admin Pustaka',
+        authorRole: editingNews.authorRole?.trim() || 'Pengelola Perpustakaan',
+        readTime: editingNews.readTime?.trim() || '3 menit baca',
+        excerpt: editingNews.excerpt.trim(),
+        content: processedContent.length > 0 ? processedContent : ['Konten berita akan segera dilengkapi.'],
+        imageUrl: finalImageUrl,
+        featured: Boolean(editingNews.featured),
+      };
+
+      if (editingNews.id) {
+        // Mode EDIT: panggil updateNews yang menggunakan updateDoc dengan ID dokumen yang tepat
+        console.log(`[handleSaveNews] Memperbarui berita dengan ID: "${editingNews.id}"`, payloadData);
+        await updateNews(editingNews.id, payloadData);
+        if (usedFallback) {
+          showToast(
+            'Berita berhasil diperbarui!',
+            'info',
+            `Foto disimpan via cadangan Base64 Firestore (${fallbackSize} KB) karena Firebase Storage tidak aktif.`
+          );
+        } else {
+          showToast('Berita berhasil diperbarui di database Firestore!');
+        }
+      } else {
+        // Mode TAMBAH BARU
+        console.log('[handleSaveNews] Menerbitkan berita baru:', payloadData);
+        await addNews(payloadData);
+        if (usedFallback) {
+          showToast(
+            'Berita baru berhasil diterbitkan!',
+            'info',
+            `Foto disimpan via cadangan Base64 Firestore (${fallbackSize} KB) karena Firebase Storage tidak aktif.`
+          );
+        } else {
+          showToast('Berita baru berhasil diterbitkan ke website!');
+        }
+      }
+
+      setIsNewsModalOpen(false);
+      setEditingNews(null);
+      setNewsImageFile(null);
+      setNewsImagePreview('');
+    } catch (err: any) {
+      console.error('[handleSaveNews] Gagal menyimpan berita:', err);
+      setNewsFormError('Gagal menyimpan berita: ' + (err.message || 'Terjadi kesalahan koneksi database.'));
+      showToast('Gagal menyimpan berita: ' + (err.message || 'Periksa koneksi Anda.'), 'error');
+    } finally {
+      setIsSubmittingNews(false);
+      setNewsUploadStatus('');
+    }
+  };
+
+  // --- HANDLER FOTO STAF (DENGAN KOMPRESI) ---
+  const handleStaffFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setStaffImageError(null);
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      validateImageFile(file);
+      setStaffImageFile(file);
+      setStaffImagePreview(URL.createObjectURL(file));
+    } catch (err: any) {
+      setStaffImageError(err.message || 'Format foto tidak didukung.');
+      if (staffFileInputRef.current) staffFileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveStaffPhoto = () => {
+    setStaffImageFile(null);
+    setStaffImagePreview('');
+    setStaffImageError(null);
+    if (editingStaff) {
+      setEditingStaff({ ...editingStaff, avatarUrl: '' });
+    }
+    if (staffFileInputRef.current) staffFileInputRef.current.value = '';
+  };
+
+  const handleSaveStaff = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingStaff) return;
+    setIsSubmittingStaff(true);
+    setStaffUploadStatus('Memproses data staf...');
+
+    try {
+      let finalAvatarUrl = editingStaff.avatarUrl || '';
+
+      if (staffImageFile) {
+        setStaffUploadStatus('Mengompresi foto staf di browser...');
+        const res = await uploadAndProcessPhoto(staffImageFile, 'staff_avatars');
+        finalAvatarUrl = res.url;
+      } else if (!staffImagePreview) {
+        finalAvatarUrl = '';
+      }
+
+      const payload = {
+        ...editingStaff,
+        avatarUrl: finalAvatarUrl,
+      };
+
+      if (editingStaff.id) {
+        await updateStaff(editingStaff.id, payload);
+        showToast('Data pengelola perpustakaan berhasil diperbarui!');
+      } else {
+        const { id, ...dataToSave } = payload;
+        await addStaff(dataToSave);
+        showToast('Staf baru berhasil ditambahkan!');
+      }
+
+      setIsStaffModalOpen(false);
+      setEditingStaff(null);
+      setStaffImageFile(null);
+      setStaffImagePreview('');
+    } catch (err: any) {
+      console.error('[handleSaveStaff] Error:', err);
+      showToast('Gagal menyimpan staf: ' + (err.message || 'Terjadi kesalahan.'), 'error');
+    } finally {
+      setIsSubmittingStaff(false);
+      setStaffUploadStatus('');
     }
   };
 
   return (
     <div className="space-y-8 pb-16">
-      {/* Toast Notification */}
-      {successToast && (
-        <div className="fixed bottom-6 right-6 z-50 bg-[#1B4332] text-white px-5 py-3.5 rounded-2xl shadow-xl flex items-center gap-3 animate-fade-in text-xs sm:text-sm">
-          <CheckCircle2 className="w-5 h-5 text-emerald-300 shrink-0" />
-          <span>{successToast}</span>
+      {/* Toast Notification Elegan */}
+      {toast && (
+        <div
+          className={`fixed bottom-6 right-6 z-50 px-5 py-4 rounded-2xl shadow-xl flex items-start gap-3.5 max-w-md border transition-all animate-in fade-in slide-in-from-bottom-2 ${
+            toast.type === 'success'
+              ? 'bg-[#1B4332] text-white border-emerald-800'
+              : toast.type === 'info'
+              ? 'bg-amber-950 text-amber-50 border-amber-800'
+              : 'bg-rose-950 text-rose-50 border-rose-800'
+          }`}
+        >
+          {toast.type === 'success' && <CheckCircle2 className="w-5 h-5 text-emerald-300 shrink-0 mt-0.5" />}
+          {toast.type === 'info' && <Info className="w-5 h-5 text-amber-300 shrink-0 mt-0.5" />}
+          {toast.type === 'error' && <AlertCircle className="w-5 h-5 text-rose-300 shrink-0 mt-0.5" />}
+
+          <div className="flex-1 space-y-0.5 text-xs sm:text-sm font-sans">
+            <p className="font-semibold leading-snug">{toast.message}</p>
+            {toast.details && <p className="text-[11px] opacity-90 leading-relaxed">{toast.details}</p>}
+          </div>
+
+          <button
+            onClick={() => setToast(null)}
+            className="text-white/70 hover:text-white p-0.5 rounded cursor-pointer"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 
@@ -246,7 +544,17 @@ export const Admin: React.FC = () => {
 
         <div className="flex flex-wrap items-center gap-3">
           <button
-            onClick={handleSeedData}
+            onClick={() => {
+              setConfirmDialog({
+                isOpen: true,
+                type: 'seed',
+                id: 'seed-action',
+                title: 'Inisialisasi Data Contoh?',
+                message:
+                  'Tindakan ini akan mengisikan berita contoh, alur SOP, dan struktur organisasi awal ke Firestore jika database Anda saat ini masih kosong.',
+                targetName: 'Data Contoh Perpustakaan',
+              });
+            }}
             disabled={actionLoading}
             className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#E6DFD3] bg-[#FAF8F5] hover:bg-[#F2ECE1] text-stone-700 text-xs font-semibold transition-colors cursor-pointer"
             title="Isi data awal jika database masih kosong"
@@ -265,7 +573,7 @@ export const Admin: React.FC = () => {
         </div>
       </div>
 
-      {/* Navigation Tabs (Pengaturan, Berita, SOP, Struktur, Admin Emails) */}
+      {/* Navigation Tabs */}
       <div className="flex items-center gap-2 overflow-x-auto pb-2 border-b border-[#E6DFD3]">
         <button
           onClick={() => setActiveTab('settings')}
@@ -505,7 +813,7 @@ export const Admin: React.FC = () => {
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-stone-700">Nomor WhatsApp (contoh: 6281234567890)</label>
+                <label className="text-xs font-semibold text-stone-700">WhatsApp</label>
                 <input
                   type="text"
                   value={contactForm.whatsapp}
@@ -525,7 +833,7 @@ export const Admin: React.FC = () => {
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-stone-700">Tautan Instagram</label>
+                <label className="text-xs font-semibold text-stone-700">Instagram</label>
                 <input
                   type="text"
                   value={contactForm.instagram}
@@ -535,7 +843,7 @@ export const Admin: React.FC = () => {
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-stone-700">Tautan YouTube</label>
+                <label className="text-xs font-semibold text-stone-700">YouTube</label>
                 <input
                   type="text"
                   value={contactForm.youtube}
@@ -552,7 +860,7 @@ export const Admin: React.FC = () => {
               disabled={actionLoading}
               className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#1B4332] text-white text-sm font-semibold hover:bg-[#143527] transition-all shadow-xs cursor-pointer"
             >
-              <Save className="w-4 h-4" />
+              {actionLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
               <span>{actionLoading ? 'Menyimpan...' : 'Simpan Seluruh Pengaturan'}</span>
             </button>
           </div>
@@ -562,7 +870,7 @@ export const Admin: React.FC = () => {
       {/* TAB 2: KELOLA BERITA */}
       {activeTab === 'news' && (
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h3 className="font-serif text-xl font-bold text-stone-900">
                 Daftar Berita & Warta Literasi
@@ -589,9 +897,12 @@ export const Admin: React.FC = () => {
                 });
                 setNewsImagePreview('');
                 setNewsImageFile(null);
+                setNewsImageError(null);
+                setNewsFormError(null);
+                if (newsFileInputRef.current) newsFileInputRef.current.value = '';
                 setIsNewsModalOpen(true);
               }}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#1B4332] text-white text-xs font-semibold hover:bg-[#143527] transition-colors cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#1B4332] text-white text-xs font-semibold hover:bg-[#143527] transition-colors cursor-pointer shrink-0"
             >
               <Plus className="w-4 h-4" />
               <span>Tulis Berita Baru</span>
@@ -600,9 +911,18 @@ export const Admin: React.FC = () => {
 
           {newsList.length === 0 ? (
             <div className="bg-white rounded-3xl border border-[#E6DFD3] p-10 text-center space-y-3">
-              <p className="text-sm text-stone-600">Belum ada berita yang tersimpan di database.</p>
+              <p className="text-sm text-stone-600">Belum ada berita yang tersimpan di database Firestore.</p>
               <button
-                onClick={handleSeedData}
+                onClick={() => {
+                  setConfirmDialog({
+                    isOpen: true,
+                    type: 'seed',
+                    id: 'seed-news',
+                    title: 'Inisialisasi Berita Contoh?',
+                    message: 'Mengisi database Firestore dengan 3 artikel berita literasi contoh.',
+                    targetName: 'Berita Contoh',
+                  });
+                }}
                 className="text-xs font-semibold text-[#1B4332] hover:underline cursor-pointer"
               >
                 Inisialisasi dengan Berita Contoh
@@ -613,54 +933,71 @@ export const Admin: React.FC = () => {
               {newsList.map((item) => (
                 <div
                   key={item.id}
-                  className="bg-white rounded-2xl border border-[#E6DFD3] p-5 flex flex-col justify-between space-y-4 shadow-2xs"
+                  className="bg-white rounded-2xl border border-[#E6DFD3] p-5 flex flex-col justify-between space-y-4 shadow-2xs hover:shadow-xs transition-shadow"
                 >
                   <div className="space-y-3">
                     {item.imageUrl ? (
-                      <img
-                        src={item.imageUrl}
-                        alt={item.title}
-                        className="w-full h-36 object-cover rounded-xl"
-                      />
+                      <div className="relative w-full h-40 rounded-xl overflow-hidden bg-stone-100 border border-[#E6DFD3]">
+                        <img
+                          src={item.imageUrl}
+                          alt={item.title}
+                          className="w-full h-full object-cover"
+                        />
+                        {item.imageUrl.startsWith('data:') && (
+                          <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-black/60 backdrop-blur-xs text-[10px] text-white font-mono">
+                            Base64
+                          </span>
+                        )}
+                      </div>
                     ) : (
-                      <div className="w-full h-24 rounded-xl bg-[#FAF8F5] border border-[#E6DFD3] flex items-center justify-center text-xs text-stone-400">
-                        Tanpa Foto Sampul
+                      <div className="w-full h-28 rounded-xl bg-[#FAF8F5] border border-dashed border-[#E6DFD3] flex items-center justify-center text-xs text-stone-400 gap-2">
+                        <ImageIcon className="w-4 h-4" />
+                        <span>Tanpa Foto Sampul</span>
                       </div>
                     )}
-                    <div className="flex items-center gap-2 text-[11px] text-stone-500">
+
+                    <div className="flex items-center gap-2 text-[11px] text-stone-500 font-sans">
                       <span className="font-semibold text-[#1B4332]">{item.category}</span>
                       <span>·</span>
                       <span>{item.date}</span>
                     </div>
-                    <h4 className="font-serif font-bold text-base text-stone-900 line-clamp-2">
+
+                    <h4 className="font-serif font-bold text-base text-stone-900 line-clamp-2 leading-snug">
                       {item.title}
                     </h4>
-                    <p className="text-xs text-stone-600 line-clamp-2">{item.excerpt}</p>
+                    <p className="text-xs text-stone-600 line-clamp-2 leading-relaxed font-sans">{item.excerpt}</p>
                   </div>
 
                   <div className="flex items-center justify-between pt-3 border-t border-[#F2ECE1]">
-                    <span className="text-[11px] text-stone-500">{item.author}</span>
+                    <span className="text-[11px] text-stone-500 font-sans">{item.author}</span>
                     <div className="flex items-center gap-1.5">
                       <button
                         onClick={() => {
                           setEditingNews(item);
                           setNewsImagePreview(item.imageUrl || '');
                           setNewsImageFile(null);
+                          setNewsImageError(null);
+                          setNewsFormError(null);
+                          if (newsFileInputRef.current) newsFileInputRef.current.value = '';
                           setIsNewsModalOpen(true);
                         }}
-                        className="p-1.5 rounded-lg text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-colors cursor-pointer"
+                        className="p-2 rounded-lg text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-colors cursor-pointer"
                         title="Edit Berita"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
                       <button
-                        onClick={async () => {
-                          if (confirm(`Hapus berita "${item.title}"?`)) {
-                            await deleteNews(item.id);
-                            triggerToast('Berita berhasil dihapus.');
-                          }
+                        onClick={() => {
+                          setConfirmDialog({
+                            isOpen: true,
+                            type: 'deleteNews',
+                            id: item.id,
+                            title: 'Hapus Berita Ini?',
+                            message: `Apakah Anda yakin ingin menghapus artikel "${item.title}"? Dokumen akan dihapus permanen dari Firestore.`,
+                            targetName: item.title,
+                          });
                         }}
-                        className="p-1.5 rounded-lg text-rose-600 hover:text-rose-800 hover:bg-rose-50 transition-colors cursor-pointer"
+                        className="p-2 rounded-lg text-rose-600 hover:text-rose-800 hover:bg-rose-50 transition-colors cursor-pointer"
                         title="Hapus Berita"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -677,7 +1014,7 @@ export const Admin: React.FC = () => {
       {/* TAB 3: KELOLA SOP */}
       {activeTab === 'sop' && (
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h3 className="font-serif text-xl font-bold text-stone-900">
                 Kelola Standar Operasional Prosedur (SOP)
@@ -701,7 +1038,7 @@ export const Admin: React.FC = () => {
                 });
                 setIsSOPModalOpen(true);
               }}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#1B4332] text-white text-xs font-semibold hover:bg-[#143527] transition-colors cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#1B4332] text-white text-xs font-semibold hover:bg-[#143527] transition-colors cursor-pointer shrink-0"
             >
               <Plus className="w-4 h-4" />
               <span>Tambah Dokumen SOP</span>
@@ -709,7 +1046,7 @@ export const Admin: React.FC = () => {
           </div>
 
           <div className="space-y-3">
-            {sopList.map((item, idx) => (
+            {sopList.map((item) => (
               <div
                 key={item.id}
                 className="bg-white rounded-2xl border border-[#E6DFD3] p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-2xs"
@@ -740,11 +1077,15 @@ export const Admin: React.FC = () => {
                     <Edit2 className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={async () => {
-                      if (confirm(`Hapus SOP "${item.title}"?`)) {
-                        await deleteSOP(item.id);
-                        triggerToast('SOP berhasil dihapus.');
-                      }
+                    onClick={() => {
+                      setConfirmDialog({
+                        isOpen: true,
+                        type: 'deleteSOP',
+                        id: item.id,
+                        title: 'Hapus Dokumen SOP?',
+                        message: `Apakah Anda yakin ingin menghapus SOP "${item.title}"? Prosedur ini akan dihilangkan dari tampilan publik.`,
+                        targetName: item.title,
+                      });
                     }}
                     className="p-2 rounded-lg text-rose-600 hover:text-rose-800 hover:bg-rose-50 transition-colors cursor-pointer"
                     title="Hapus SOP"
@@ -761,7 +1102,7 @@ export const Admin: React.FC = () => {
       {/* TAB 4: KELOLA STRUKTUR ORGANISASI */}
       {activeTab === 'staff' && (
         <div className="space-y-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div>
               <h3 className="font-serif text-xl font-bold text-stone-900">
                 Kelola Struktur Organisasi & Pengelola
@@ -785,9 +1126,11 @@ export const Admin: React.FC = () => {
                 });
                 setStaffImagePreview('');
                 setStaffImageFile(null);
+                setStaffImageError(null);
+                if (staffFileInputRef.current) staffFileInputRef.current.value = '';
                 setIsStaffModalOpen(true);
               }}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#1B4332] text-white text-xs font-semibold hover:bg-[#143527] transition-colors cursor-pointer"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#1B4332] text-white text-xs font-semibold hover:bg-[#143527] transition-colors cursor-pointer shrink-0"
             >
               <Plus className="w-4 h-4" />
               <span>Tambah Staf Pengelola</span>
@@ -839,6 +1182,8 @@ export const Admin: React.FC = () => {
                       setEditingStaff(item);
                       setStaffImagePreview(item.avatarUrl || '');
                       setStaffImageFile(null);
+                      setStaffImageError(null);
+                      if (staffFileInputRef.current) staffFileInputRef.current.value = '';
                       setIsStaffModalOpen(true);
                     }}
                     className="p-1.5 rounded-lg text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-colors cursor-pointer"
@@ -847,11 +1192,15 @@ export const Admin: React.FC = () => {
                     <Edit2 className="w-4 h-4" />
                   </button>
                   <button
-                    onClick={async () => {
-                      if (confirm(`Hapus pengelola "${item.name}"?`)) {
-                        await deleteStaff(item.id);
-                        triggerToast('Data staf berhasil dihapus.');
-                      }
+                    onClick={() => {
+                      setConfirmDialog({
+                        isOpen: true,
+                        type: 'deleteStaff',
+                        id: item.id,
+                        title: 'Hapus Data Staf?',
+                        message: `Apakah Anda yakin ingin menghapus data pengelola "${item.name}"?`,
+                        targetName: item.name,
+                      });
                     }}
                     className="p-1.5 rounded-lg text-rose-600 hover:text-rose-800 hover:bg-rose-50 transition-colors cursor-pointer"
                     title="Hapus Staf"
@@ -890,9 +1239,13 @@ export const Admin: React.FC = () => {
                 type="button"
                 onClick={async () => {
                   if (!newAdminEmail.trim()) return;
-                  await addAdminEmail(newAdminEmail);
-                  setNewAdminEmail('');
-                  triggerToast('Email admin berhasil ditambahkan.');
+                  try {
+                    await addAdminEmail(newAdminEmail);
+                    setNewAdminEmail('');
+                    showToast(`Email ${newAdminEmail} berhasil ditambahkan sebagai admin.`);
+                  } catch (err: any) {
+                    showToast('Gagal menambahkan admin: ' + err.message, 'error');
+                  }
                 }}
                 className="px-4 py-2.5 rounded-xl bg-[#1B4332] text-white text-xs font-semibold hover:bg-[#143527] transition-colors cursor-pointer"
               >
@@ -916,11 +1269,15 @@ export const Admin: React.FC = () => {
                       </span>
                     ) : (
                       <button
-                        onClick={async () => {
-                          if (confirm(`Cabut akses admin untuk ${email}?`)) {
-                            await removeAdminEmail(email);
-                            triggerToast('Akses email admin dicabut.');
-                          }
+                        onClick={() => {
+                          setConfirmDialog({
+                            isOpen: true,
+                            type: 'removeAdmin',
+                            id: email,
+                            title: 'Cabut Akses Admin?',
+                            message: `Apakah Anda yakin ingin mencabut hak akses administrator untuk "${email}"?`,
+                            targetName: email,
+                          });
                         }}
                         className="text-rose-600 hover:text-rose-800 font-sans font-semibold hover:underline cursor-pointer"
                       >
@@ -935,54 +1292,39 @@ export const Admin: React.FC = () => {
         </div>
       )}
 
-      {/* --- MODAL EDIT/TAMBAH BERITA --- */}
+      {/* --- MODAL EDIT/TAMBAH BERITA (DENGAN UPLOAD FOTO & PREVIEW & STEP LOADING) --- */}
       {isNewsModalOpen && editingNews && (
         <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-3xl border border-[#E6DFD3] max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 space-y-6 shadow-2xl">
             <div className="flex items-center justify-between border-b border-[#E6DFD3] pb-4">
-              <h3 className="font-serif text-xl font-bold text-stone-900">
-                {editingNews.id ? 'Edit Berita Literasi' : 'Tulis Berita Baru'}
-              </h3>
+              <div>
+                <h3 className="font-serif text-xl font-bold text-stone-900">
+                  {editingNews.id ? 'Edit Berita Literasi' : 'Tulis Berita Baru'}
+                </h3>
+                <p className="text-xs text-stone-500 mt-0.5 font-sans">
+                  {editingNews.id ? `Memperbarui dokumen ID: ${editingNews.id}` : 'Menerbitkan artikel baru ke website'}
+                </p>
+              </div>
               <button
-                onClick={() => setIsNewsModalOpen(false)}
-                className="p-1 rounded-lg text-stone-400 hover:text-stone-700 cursor-pointer"
+                type="button"
+                onClick={() => {
+                  if (!isSubmittingNews) setIsNewsModalOpen(false);
+                }}
+                disabled={isSubmittingNews}
+                className="p-1 rounded-lg text-stone-400 hover:text-stone-700 cursor-pointer disabled:opacity-50"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                setActionLoading(true);
-                try {
-                  let uploadedUrl = editingNews.imageUrl;
-                  if (newsImageFile) {
-                    uploadedUrl = await uploadImageToStorage(newsImageFile, 'news_covers');
-                  }
+            {newsFormError && (
+              <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-800 flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                <span>{newsFormError}</span>
+              </div>
+            )}
 
-                  const payload = {
-                    ...editingNews,
-                    imageUrl: uploadedUrl,
-                  };
-
-                  if (editingNews.id) {
-                    await updateNews(editingNews.id, payload);
-                    triggerToast('Berita berhasil diperbarui!');
-                  } else {
-                    const { id, ...dataToSave } = payload;
-                    await addNews(dataToSave);
-                    triggerToast('Berita baru berhasil diterbitkan!');
-                  }
-                  setIsNewsModalOpen(false);
-                } catch (err: any) {
-                  alert('Gagal menyimpan berita: ' + err.message);
-                } finally {
-                  setActionLoading(false);
-                }
-              }}
-              className="space-y-4"
-            >
+            <form onSubmit={handleSaveNews} className="space-y-5">
               <div className="space-y-1">
                 <label className="text-xs font-semibold text-stone-700">Judul Berita *</label>
                 <input
@@ -990,7 +1332,8 @@ export const Admin: React.FC = () => {
                   required
                   value={editingNews.title}
                   onChange={(e) => setEditingNews({ ...editingNews, title: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] text-xs sm:text-sm text-stone-900"
+                  placeholder="Contoh: Kunjungan Rutin Pojok Baca Kelas VII..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] text-xs sm:text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#1B4332]"
                 />
               </div>
 
@@ -1000,7 +1343,7 @@ export const Admin: React.FC = () => {
                   <select
                     value={editingNews.category}
                     onChange={(e) => setEditingNews({ ...editingNews, category: e.target.value as any })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] text-xs sm:text-sm text-stone-900"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] text-xs sm:text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#1B4332]"
                   >
                     <option value="Kegiatan">Kegiatan</option>
                     <option value="Pengumuman">Pengumuman</option>
@@ -1016,7 +1359,7 @@ export const Admin: React.FC = () => {
                     type="text"
                     value={editingNews.date}
                     onChange={(e) => setEditingNews({ ...editingNews, date: e.target.value })}
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] text-xs sm:text-sm text-stone-900"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] text-xs sm:text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#1B4332]"
                   />
                 </div>
               </div>
@@ -1028,67 +1371,160 @@ export const Admin: React.FC = () => {
                   required
                   value={editingNews.excerpt}
                   onChange={(e) => setEditingNews({ ...editingNews, excerpt: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] text-xs sm:text-sm text-stone-900"
+                  placeholder="Ringkasan 1-2 kalimat untuk kartu berita di beranda..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] text-xs sm:text-sm text-stone-900 focus:outline-none focus:ring-2 focus:ring-[#1B4332]"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="text-xs font-semibold text-stone-700">Isi Berita Lengkap (Pisahkan paragraf dengan baris baru) *</label>
+                <label className="text-xs font-semibold text-stone-700">
+                  Isi Berita Lengkap * (Gunakan dua kali Enter untuk paragraf baru)
+                </label>
                 <textarea
                   rows={6}
                   required
                   value={Array.isArray(editingNews.content) ? editingNews.content.join('\n\n') : editingNews.content}
-                  onChange={(e) => setEditingNews({ ...editingNews, content: e.target.value.split('\n\n').filter(Boolean) })}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] text-xs sm:text-sm text-stone-900 font-sans"
+                  onChange={(e) =>
+                    setEditingNews({
+                      ...editingNews,
+                      content: e.target.value.split('\n\n').filter(Boolean),
+                    })
+                  }
+                  placeholder="Tuliskan isi berita atau dokumentasi kegiatan secara lengkap..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] text-xs sm:text-sm text-stone-900 font-sans focus:outline-none focus:ring-2 focus:ring-[#1B4332]"
                 />
               </div>
 
-              {/* Upload Foto dengan Kompres Otomatis */}
-              <div className="space-y-2 pt-1 border-t border-[#E6DFD3]">
-                <label className="text-xs font-semibold text-stone-700 block">
-                  Foto Sampul (Otomatis dikompres sebelum diunggah ke Storage)
-                </label>
-                <div className="flex items-center gap-4">
-                  <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#E6DFD3] bg-[#FAF8F5] hover:bg-[#F2ECE1] text-xs font-semibold text-stone-700 cursor-pointer">
-                    <Upload className="w-4 h-4 text-[#1B4332]" />
-                    <span>Pilih Foto</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setNewsImageFile(file);
-                          setNewsImagePreview(URL.createObjectURL(file));
-                        }
-                      }}
-                    />
+              {/* SECTION: FOTO SAMPUL (DENGAN INPUT FILE, KOMPRESI BROWSER, PREVIEW, GANTI & HAPUS) */}
+              <div className="space-y-2.5 pt-2 border-t border-[#E6DFD3]">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-stone-800">
+                    Foto Sampul Berita (JPG, PNG, atau WebP)
                   </label>
-                  {newsImagePreview && (
-                    <img
-                      src={newsImagePreview}
-                      alt="Preview"
-                      className="w-20 h-14 object-cover rounded-lg border border-[#E6DFD3]"
-                    />
-                  )}
+                  <span className="text-[11px] text-stone-500 font-sans">
+                    Otomatis dikompres &lt; 300 KB di browser
+                  </span>
+                </div>
+
+                {/* Error jika file bukan gambar */}
+                {newsImageError && (
+                  <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-xs text-rose-700 flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 text-rose-500 mt-0.5" />
+                    <span>{newsImageError}</span>
+                  </div>
+                )}
+
+                {/* Hidden File Input */}
+                <input
+                  ref={newsFileInputRef}
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                  onChange={handleNewsFileSelect}
+                  className="hidden"
+                />
+
+                {/* Jika sudah ada foto (baik preview file baru maupun imageUrl tersimpan) */}
+                {newsImagePreview ? (
+                  <div className="p-3.5 rounded-2xl bg-[#FAF8F5] border border-[#E6DFD3] flex flex-col sm:flex-row items-center gap-4">
+                    <div className="relative w-full sm:w-36 h-24 rounded-xl overflow-hidden bg-stone-100 border border-[#E6DFD3] shrink-0">
+                      <img
+                        src={newsImagePreview}
+                        alt="Preview Foto Sampul"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+
+                    <div className="flex-1 space-y-1.5 text-left w-full">
+                      <div className="flex items-center gap-2">
+                        {newsImageFile ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-semibold">
+                            <Sparkles className="w-3 h-3" /> Foto Baru Terpilih ({(newsImageFile.size / 1024).toFixed(0)} KB)
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-semibold">
+                            <Check className="w-3 h-3" /> Foto Sampul Aktif
+                          </span>
+                        )}
+                      </div>
+
+                      <p className="text-xs text-stone-600 line-clamp-1">
+                        {newsImageFile ? newsImageFile.name : 'Gambar sampul terpasang pada dokumen berita.'}
+                      </p>
+
+                      <div className="flex items-center gap-2 pt-1">
+                        <button
+                          type="button"
+                          onClick={() => newsFileInputRef.current?.click()}
+                          className="px-3 py-1.5 rounded-lg border border-[#E6DFD3] bg-white hover:bg-stone-50 text-stone-700 text-xs font-semibold transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5 text-stone-500" />
+                          <span>Ganti Foto</span>
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={handleRemoveNewsPhoto}
+                          className="px-3 py-1.5 rounded-lg border border-rose-200 text-rose-700 hover:bg-rose-50 text-xs font-semibold transition-colors cursor-pointer inline-flex items-center gap-1.5"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Hapus Foto</span>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* Area Pilih Foto jika belum ada */
+                  <div
+                    onClick={() => newsFileInputRef.current?.click()}
+                    className="p-6 rounded-2xl border-2 border-dashed border-[#E6DFD3] hover:border-[#1B4332] bg-[#FAF8F5]/60 hover:bg-[#FAF8F5] transition-colors cursor-pointer text-center space-y-2 group"
+                  >
+                    <div className="w-10 h-10 rounded-xl bg-white border border-[#E6DFD3] group-hover:border-[#1B4332] text-[#1B4332] flex items-center justify-center mx-auto shadow-2xs">
+                      <Upload className="w-5 h-5" />
+                    </div>
+                    <div className="space-y-0.5">
+                      <p className="text-xs font-semibold text-stone-800">
+                        Klik untuk Memilih Foto Sampul (JPG, PNG, atau WebP)
+                      </p>
+                      <p className="text-[11px] text-stone-500 font-sans">
+                        Lebar maksimal 1280 px, kompresi otomatis ke &lt; 300 KB.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Info sistem cadangan */}
+                <div className="p-2.5 rounded-xl bg-[#FAF8F5] border border-[#E6DFD3] text-[11px] text-stone-600 flex items-center gap-2">
+                  <Info className="w-4 h-4 text-[#1B4332] shrink-0" />
+                  <span>
+                    Prioritas diunggah ke Firebase Storage. Bila Storage belum aktif, sistem otomatis menyimpan foto sebagai cadangan Base64 (&lt; 200 KB) di dokumen Firestore.
+                  </span>
                 </div>
               </div>
+
+              {/* Status indikator saat upload */}
+              {isSubmittingNews && newsUploadStatus && (
+                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-center gap-2.5">
+                  <Loader2 className="w-4 h-4 animate-spin text-emerald-600 shrink-0" />
+                  <span className="font-medium">{newsUploadStatus}</span>
+                </div>
+              )}
 
               <div className="flex justify-end gap-3 pt-4 border-t border-[#E6DFD3]">
                 <button
                   type="button"
+                  disabled={isSubmittingNews}
                   onClick={() => setIsNewsModalOpen(false)}
-                  className="px-4 py-2.5 rounded-xl border border-[#E6DFD3] text-xs font-semibold text-stone-600 hover:bg-stone-50 cursor-pointer"
+                  className="px-4 py-2.5 rounded-xl border border-[#E6DFD3] text-xs font-semibold text-stone-600 hover:bg-stone-50 cursor-pointer disabled:opacity-50"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  disabled={actionLoading}
-                  className="px-5 py-2.5 rounded-xl bg-[#1B4332] text-white text-xs font-semibold hover:bg-[#143527] transition-colors cursor-pointer"
+                  disabled={isSubmittingNews}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#1B4332] text-white text-xs font-semibold hover:bg-[#143527] transition-colors cursor-pointer disabled:opacity-60"
                 >
-                  {actionLoading ? 'Menyimpan & Mengunggah...' : 'Simpan Berita'}
+                  {isSubmittingNews && <Loader2 className="w-4 h-4 animate-spin" />}
+                  <span>{isSubmittingNews ? 'Menyimpan...' : editingNews.id ? 'Simpan Pembaruan' : 'Terbitkan Berita'}</span>
                 </button>
               </div>
             </form>
@@ -1105,6 +1541,7 @@ export const Admin: React.FC = () => {
                 {editingSOP.id ? 'Edit Dokumen SOP' : 'Tambah SOP Baru'}
               </h3>
               <button
+                type="button"
                 onClick={() => setIsSOPModalOpen(false)}
                 className="p-1 rounded-lg text-stone-400 hover:text-stone-700 cursor-pointer"
               >
@@ -1119,15 +1556,16 @@ export const Admin: React.FC = () => {
                 try {
                   if (editingSOP.id) {
                     await updateSOP(editingSOP.id, editingSOP);
-                    triggerToast('SOP berhasil diperbarui!');
+                    showToast('SOP pelayanan berhasil diperbarui!');
                   } else {
                     const { id, ...dataToSave } = editingSOP;
                     await addSOP(dataToSave);
-                    triggerToast('SOP baru berhasil ditambahkan!');
+                    showToast('SOP baru berhasil ditambahkan!');
                   }
                   setIsSOPModalOpen(false);
                 } catch (err: any) {
-                  alert('Gagal menyimpan SOP: ' + err.message);
+                  console.error('[handleSaveSOP] Error:', err);
+                  showToast('Gagal menyimpan SOP: ' + (err.message || 'Terjadi kesalahan.'), 'error');
                 } finally {
                   setActionLoading(false);
                 }
@@ -1199,7 +1637,7 @@ export const Admin: React.FC = () => {
                   disabled={actionLoading}
                   className="px-5 py-2.5 rounded-xl bg-[#1B4332] text-white text-xs font-semibold hover:bg-[#143527] transition-colors cursor-pointer"
                 >
-                  Simpan SOP
+                  {actionLoading ? 'Menyimpan...' : 'Simpan SOP'}
                 </button>
               </div>
             </form>
@@ -1207,7 +1645,7 @@ export const Admin: React.FC = () => {
         </div>
       )}
 
-      {/* --- MODAL EDIT/TAMBAH STAF --- */}
+      {/* --- MODAL EDIT/TAMBAH STAF (DENGAN KOMPRESI FOTO) --- */}
       {isStaffModalOpen && editingStaff && (
         <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-3xl border border-[#E6DFD3] max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 space-y-6 shadow-2xl">
@@ -1216,6 +1654,7 @@ export const Admin: React.FC = () => {
                 {editingStaff.id ? 'Edit Data Pengelola' : 'Tambah Staf Baru'}
               </h3>
               <button
+                type="button"
                 onClick={() => setIsStaffModalOpen(false)}
                 className="p-1 rounded-lg text-stone-400 hover:text-stone-700 cursor-pointer"
               >
@@ -1223,38 +1662,7 @@ export const Admin: React.FC = () => {
               </button>
             </div>
 
-            <form
-              onSubmit={async (e) => {
-                e.preventDefault();
-                setActionLoading(true);
-                try {
-                  let uploadedUrl = editingStaff.avatarUrl;
-                  if (staffImageFile) {
-                    uploadedUrl = await uploadImageToStorage(staffImageFile, 'staff_avatars');
-                  }
-
-                  const payload = {
-                    ...editingStaff,
-                    avatarUrl: uploadedUrl,
-                  };
-
-                  if (editingStaff.id) {
-                    await updateStaff(editingStaff.id, payload);
-                    triggerToast('Data staf berhasil diperbarui!');
-                  } else {
-                    const { id, ...dataToSave } = payload;
-                    await addStaff(dataToSave);
-                    triggerToast('Staf baru berhasil ditambahkan!');
-                  }
-                  setIsStaffModalOpen(false);
-                } catch (err: any) {
-                  alert('Gagal menyimpan staf: ' + err.message);
-                } finally {
-                  setActionLoading(false);
-                }
-              }}
-              className="space-y-4"
-            >
+            <form onSubmit={handleSaveStaff} className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <label className="text-xs font-semibold text-stone-700">Nama Lengkap & Gelar *</label>
@@ -1316,7 +1724,12 @@ export const Admin: React.FC = () => {
                 <textarea
                   rows={3}
                   value={Array.isArray(editingStaff.tasks) ? editingStaff.tasks.join('\n') : editingStaff.tasks}
-                  onChange={(e) => setEditingStaff({ ...editingStaff, tasks: e.target.value.split('\n').filter(Boolean) })}
+                  onChange={(e) =>
+                    setEditingStaff({
+                      ...editingStaff,
+                      tasks: e.target.value.split('\n').filter(Boolean),
+                    })
+                  }
                   className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] text-xs sm:text-sm text-stone-900"
                 />
               </div>
@@ -1324,38 +1737,69 @@ export const Admin: React.FC = () => {
               {/* Upload Foto Staf dengan Kompres Otomatis */}
               <div className="space-y-2 pt-1 border-t border-[#E6DFD3]">
                 <label className="text-xs font-semibold text-stone-700 block">
-                  Foto / Avatar (Kompres otomatis sebelum upload)
+                  Foto / Avatar (Kompres otomatis &lt; 300 KB)
                 </label>
+
+                {staffImageError && (
+                  <p className="text-xs text-rose-600">{staffImageError}</p>
+                )}
+
+                <input
+                  ref={staffFileInputRef}
+                  type="file"
+                  accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                  onChange={handleStaffFileSelect}
+                  className="hidden"
+                />
+
                 <div className="flex items-center gap-4">
-                  <label className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#E6DFD3] bg-[#FAF8F5] hover:bg-[#F2ECE1] text-xs font-semibold text-stone-700 cursor-pointer">
-                    <Upload className="w-4 h-4 text-[#1B4332]" />
-                    <span>Pilih Foto</span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="hidden"
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          setStaffImageFile(file);
-                          setStaffImagePreview(URL.createObjectURL(file));
-                        }
-                      }}
-                    />
-                  </label>
-                  {staffImagePreview && (
-                    <img
-                      src={staffImagePreview}
-                      alt="Preview"
-                      className="w-14 h-14 object-cover rounded-xl border border-[#E6DFD3]"
-                    />
+                  {staffImagePreview ? (
+                    <div className="flex items-center gap-3">
+                      <img
+                        src={staffImagePreview}
+                        alt="Preview Avatar"
+                        className="w-14 h-14 object-cover rounded-xl border border-[#E6DFD3]"
+                      />
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => staffFileInputRef.current?.click()}
+                          className="px-3 py-1.5 rounded-lg border border-[#E6DFD3] text-xs font-semibold text-stone-700 hover:bg-stone-50"
+                        >
+                          Ganti
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleRemoveStaffPhoto}
+                          className="px-3 py-1.5 rounded-lg border border-rose-200 text-xs font-semibold text-rose-700 hover:bg-rose-50"
+                        >
+                          Hapus
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => staffFileInputRef.current?.click()}
+                      className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-[#E6DFD3] bg-[#FAF8F5] hover:bg-[#F2ECE1] text-xs font-semibold text-stone-700 cursor-pointer"
+                    >
+                      <Upload className="w-4 h-4 text-[#1B4332]" />
+                      <span>Pilih Foto Avatar</span>
+                    </button>
                   )}
                 </div>
               </div>
 
+              {isSubmittingStaff && staffUploadStatus && (
+                <p className="text-xs text-emerald-700 font-medium flex items-center gap-2">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" /> {staffUploadStatus}
+                </p>
+              )}
+
               <div className="flex justify-end gap-3 pt-4 border-t border-[#E6DFD3]">
                 <button
                   type="button"
+                  disabled={isSubmittingStaff}
                   onClick={() => setIsStaffModalOpen(false)}
                   className="px-4 py-2.5 rounded-xl border border-[#E6DFD3] text-xs font-semibold text-stone-600 hover:bg-stone-50 cursor-pointer"
                 >
@@ -1363,13 +1807,54 @@ export const Admin: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  disabled={actionLoading}
+                  disabled={isSubmittingStaff}
                   className="px-5 py-2.5 rounded-xl bg-[#1B4332] text-white text-xs font-semibold hover:bg-[#143527] transition-colors cursor-pointer"
                 >
-                  {actionLoading ? 'Menyimpan...' : 'Simpan Data Staf'}
+                  {isSubmittingStaff ? 'Menyimpan...' : 'Simpan Data Staf'}
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* --- MODAL KONFIRMASI KHUSUS (PENGGANTI WINDOW.CONFIRM DI DALAM IFRAME) --- */}
+      {confirmDialog && confirmDialog.isOpen && (
+        <div className="fixed inset-0 z-50 bg-stone-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in">
+          <div className="bg-white rounded-3xl border border-[#E6DFD3] max-w-md w-full p-6 sm:p-7 space-y-5 shadow-2xl text-center">
+            <div className="w-12 h-12 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center mx-auto">
+              <Trash2 className="w-6 h-6" />
+            </div>
+
+            <div className="space-y-2">
+              <h3 className="font-serif text-xl font-bold text-stone-900">
+                {confirmDialog.title}
+              </h3>
+              <p className="text-xs sm:text-sm text-stone-600 leading-relaxed font-sans">
+                {confirmDialog.message}
+              </p>
+            </div>
+
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <button
+                type="button"
+                disabled={isConfirmingAction}
+                onClick={() => setConfirmDialog(null)}
+                className="px-5 py-2.5 rounded-xl border border-[#E6DFD3] text-xs font-semibold text-stone-700 hover:bg-stone-100 transition-colors cursor-pointer disabled:opacity-50"
+              >
+                Batal
+              </button>
+
+              <button
+                type="button"
+                disabled={isConfirmingAction}
+                onClick={handleExecuteConfirmedAction}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold transition-colors cursor-pointer disabled:opacity-50 shadow-xs"
+              >
+                {isConfirmingAction && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                <span>{isConfirmingAction ? 'Memproses...' : 'Ya, Lanjutkan'}</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
