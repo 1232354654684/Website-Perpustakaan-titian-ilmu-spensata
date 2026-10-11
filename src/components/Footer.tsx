@@ -15,7 +15,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   };
 
   return (
-    <footer className="bg-[#122D21] text-stone-300 border-t border-[#1B4332] pt-16 pb-12 mt-20">
+    <footer className="bg-[var(--color-primary-dark)] text-stone-300 border-t border-[var(--color-primary)] pt-16 pb-12 mt-20 transition-colors">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-14">
           {/* Column 1: Identity & Tagline */}

@@ -1,34 +1,11 @@
-import { ContactInfo, HomeStatItem, LibraryProfile, NewsItem, OperatingHours, SOPEntry, StaffMember } from '../types';
+import { ContactInfo, LibraryProfile, NewsItem, OperatingHours, SOPEntry, StaffMember, HomeStatItem } from '../types';
+import { DEFAULT_THEME } from '../lib/theme';
 
-export const defaultHomeStats: HomeStatItem[] = [
-  {
-    id: 'stat-books',
-    label: 'Total Koleksi Buku',
-    value: '8.450',
-    suffix: '+',
-    unit: 'Eksemplar',
-  },
-  {
-    id: 'stat-titles',
-    label: 'Judul Bahan Pustaka',
-    value: '2.980',
-    suffix: '+',
-    unit: 'Judul',
-  },
-  {
-    id: 'stat-members',
-    label: 'Anggota Aktif',
-    value: '780',
-    suffix: '+',
-    unit: 'Siswa & Guru',
-  },
-  {
-    id: 'stat-visitors',
-    label: 'Pengunjung Bulanan',
-    value: '1.420',
-    suffix: '+',
-    unit: 'Pemustaka',
-  },
+export const defaultHomeStatsData: HomeStatItem[] = [
+  { id: 'stat-1', label: 'Total Koleksi Buku', value: '8.450', suffix: '+', unit: 'Eksemplar' },
+  { id: 'stat-2', label: 'Judul Bahan Pustaka', value: '2.980', suffix: '+', unit: 'Judul' },
+  { id: 'stat-3', label: 'Anggota Aktif', value: '780', suffix: '+', unit: 'Siswa & Guru' },
+  { id: 'stat-4', label: 'Status Akreditasi', value: 'A', suffix: '', unit: 'Perpustakaan Sekolah' },
 ];
 
 export const libraryProfileData: LibraryProfile = {
@@ -62,8 +39,10 @@ export const libraryProfileData: LibraryProfile = {
     activeMembers: 780,
     monthlyVisitors: 1420
   },
-  homeStats: defaultHomeStats,
-  logoUrl: ''
+  logoUrl: '',
+  homeStats: defaultHomeStatsData,
+  heroVisualDescription: 'Menyediakan ragam bahan pustaka terkurasi, ruang baca berpenyejuk udara, otomasi katalog pencarian judul, serta selasar hijau ramah anak.',
+  colorTheme: DEFAULT_THEME
 };
 
 export const operatingHoursData: OperatingHours[] = [

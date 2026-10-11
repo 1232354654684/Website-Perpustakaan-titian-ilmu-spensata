@@ -46,50 +46,50 @@ export const Contact: React.FC = () => {
         {/* Kolom Kiri: Detail Kontak & Jam Buka */}
         <div className="lg:col-span-5 space-y-8">
           {/* Alamat & Kontak Utama */}
-          <div className="bg-white rounded-3xl border border-[#E6DFD3] p-6 sm:p-8 shadow-xs space-y-6">
-            <h3 className="font-serif text-xl font-bold text-stone-900 border-b border-[#E6DFD3] pb-4">
+          <div className="bg-[var(--color-surface)] rounded-3xl border border-[var(--color-border)] p-6 sm:p-8 shadow-xs space-y-6">
+            <h3 className="font-serif text-xl font-bold text-[var(--color-text)] border-b border-[var(--color-border)] pb-4">
               Sekretariat Pustaka
             </h3>
 
-            <div className="space-y-4 text-sm text-stone-600">
+            <div className="space-y-4 text-sm text-[var(--color-text-muted)]">
               <div className="flex items-start gap-3.5">
-                <div className="w-9 h-9 rounded-xl bg-[#FAF8F5] border border-[#E6DFD3] text-[#1B4332] flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-[var(--color-bg)] border border-[var(--color-border)] text-[var(--color-primary)] flex items-center justify-center shrink-0">
                   <MapPin className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-stone-900 uppercase tracking-wider">
+                  <p className="text-xs font-bold text-[var(--color-text)] uppercase tracking-wider">
                     Alamat Lengkap
                   </p>
-                  <p className="mt-0.5 leading-relaxed">
+                  <p className="mt-0.5 leading-relaxed text-[var(--color-text)]">
                     {contactInfo.address}
                   </p>
-                  <p className="text-xs text-stone-500">
+                  <p className="text-xs text-[var(--color-text-muted)]">
                     {contactInfo.district}, {contactInfo.province} {contactInfo.postalCode}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3.5">
-                <div className="w-9 h-9 rounded-xl bg-[#FAF8F5] border border-[#E6DFD3] text-[#1B4332] flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-[var(--color-bg)] border border-[var(--color-border)] text-[var(--color-primary)] flex items-center justify-center shrink-0">
                   <Phone className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-stone-900 uppercase tracking-wider">
+                  <p className="text-xs font-bold text-[var(--color-text)] uppercase tracking-wider">
                     Telepon Sekolah
                   </p>
-                  <p className="mt-0.5 font-mono">{contactInfo.phone}</p>
+                  <p className="mt-0.5 font-mono text-[var(--color-text)]">{contactInfo.phone}</p>
                 </div>
               </div>
 
               <div className="flex items-start gap-3.5">
-                <div className="w-9 h-9 rounded-xl bg-[#FAF8F5] border border-[#E6DFD3] text-[#1B4332] flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-[var(--color-bg)] border border-[var(--color-border)] text-[var(--color-primary)] flex items-center justify-center shrink-0">
                   <Mail className="w-4 h-4" />
                 </div>
                 <div>
-                  <p className="text-xs font-bold text-stone-900 uppercase tracking-wider">
+                  <p className="text-xs font-bold text-[var(--color-text)] uppercase tracking-wider">
                     Pos-el (Email)
                   </p>
-                  <p className="mt-0.5 font-mono text-stone-800">{contactInfo.email}</p>
+                  <p className="mt-0.5 font-mono text-[var(--color-text)]">{contactInfo.email}</p>
                 </div>
               </div>
 
@@ -99,18 +99,18 @@ export const Contact: React.FC = () => {
                   href={`https://wa.me/${contactInfo.whatsapp}?text=Halo%20Admin%20Perpustakaan%20Titian%20Ilmu%20SMPN%201%20Tambak,%20saya%20ingin%20bertanya:`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[#1B4332] text-white text-xs sm:text-sm font-semibold hover:bg-[#143527] transition-all shadow-xs"
+                  className="w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-[var(--color-primary)] text-white text-xs sm:text-sm font-semibold hover:bg-[var(--color-primary-dark)] transition-all shadow-xs"
                 >
                   <MessageSquare className="w-4 h-4" />
                   <span>Kirim Pesan WhatsApp Langsung</span>
-                  <ExternalLink className="w-3.5 h-3.5 ml-1 text-emerald-200" />
+                  <ExternalLink className="w-3.5 h-3.5 ml-1 text-white/80" />
                 </a>
               </div>
             </div>
 
             {/* Social Media Links */}
-            <div className="pt-4 border-t border-[#E6DFD3] space-y-3">
-              <p className="text-xs font-bold text-stone-900 uppercase tracking-wider">
+            <div className="pt-4 border-t border-[var(--color-border)] space-y-3">
+              <p className="text-xs font-bold text-[var(--color-text)] uppercase tracking-wider">
                 Media Sosial Resmi
               </p>
               <div className="flex items-center gap-3">
@@ -118,16 +118,16 @@ export const Contact: React.FC = () => {
                   href={contactInfo.instagram}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#FAF8F5] border border-[#E6DFD3] text-xs font-medium text-stone-700 hover:text-stone-950 hover:bg-[#F2ECE1] transition-colors"
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[var(--color-bg)] border border-[var(--color-border)] text-xs font-medium text-[var(--color-text)] hover:bg-[var(--color-muted)] transition-colors"
                 >
-                  <Instagram className="w-4 h-4 text-rose-700" />
+                  <Instagram className="w-4 h-4 text-rose-600" />
                   <span>Instagram</span>
                 </a>
                 <a
                   href={contactInfo.youtube}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[#FAF8F5] border border-[#E6DFD3] text-xs font-medium text-stone-700 hover:text-stone-950 hover:bg-[#F2ECE1] transition-colors"
+                  className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-[var(--color-bg)] border border-[var(--color-border)] text-xs font-medium text-[var(--color-text)] hover:bg-[var(--color-muted)] transition-colors"
                 >
                   <Youtube className="w-4 h-4 text-red-600" />
                   <span>YouTube</span>
@@ -137,10 +137,10 @@ export const Contact: React.FC = () => {
           </div>
 
           {/* Jam Buka Ringkas */}
-          <div className="bg-[#FAF8F5] rounded-3xl border border-[#E6DFD3] p-6 sm:p-8 space-y-4">
+          <div className="bg-[var(--color-bg)] rounded-3xl border border-[var(--color-border)] p-6 sm:p-8 space-y-4">
             <div className="flex items-center gap-2.5">
-              <Clock className="w-5 h-5 text-[#1B4332]" />
-              <h4 className="font-serif text-lg font-bold text-stone-900">
+              <Clock className="w-5 h-5 text-[var(--color-primary)]" />
+              <h4 className="font-serif text-lg font-bold text-[var(--color-text)]">
                 Jadwal Kunjungan & Sirkulasi
               </h4>
             </div>
@@ -149,11 +149,11 @@ export const Contact: React.FC = () => {
               {operatingHours.map((h, i) => (
                 <div
                   key={i}
-                  className="flex items-center justify-between py-2 border-b border-[#E8E2D6] last:border-0"
+                  className="flex items-center justify-between py-2 border-b border-[var(--color-border)] last:border-0"
                 >
                   <div className="space-y-0.5">
-                    <span className="font-semibold text-stone-800 block">{h.dayRange}</span>
-                    {h.notes && <span className="text-[10px] text-stone-500 italic block">{h.notes}</span>}
+                    <span className="font-semibold text-[var(--color-text)] block">{h.dayRange}</span>
+                    {h.notes && <span className="text-[10px] text-[var(--color-text-muted)] italic block">{h.notes}</span>}
                   </div>
                   <div className="text-right">
                     <span
@@ -163,7 +163,7 @@ export const Contact: React.FC = () => {
                     >
                       {h.isOpen ? 'Buka' : 'Tutup'}
                     </span>
-                    <p className="font-mono font-bold text-stone-900">{h.hours}</p>
+                    <p className="font-mono font-bold text-[var(--color-text)]">{h.hours}</p>
                   </div>
                 </div>
               ))}
@@ -173,22 +173,22 @@ export const Contact: React.FC = () => {
 
         {/* Kolom Kanan: Buku Tamu / Formulir Aspirasi & Usulan Buku */}
         <div className="lg:col-span-7">
-          <div className="bg-white rounded-3xl border border-[#E6DFD3] p-6 sm:p-10 shadow-xs space-y-6">
+          <div className="bg-[var(--color-surface)] rounded-3xl border border-[var(--color-border)] p-6 sm:p-10 shadow-xs space-y-6">
             <div>
-              <span className="text-xs font-semibold text-[#1B4332] uppercase tracking-widest">
+              <span className="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-widest">
                 Layanan Interaktif
               </span>
-              <h3 className="font-serif text-2xl font-bold text-stone-900 mt-1">
+              <h3 className="font-serif text-2xl font-bold text-[var(--color-text)] mt-1">
                 Buku Tamu & Usulan Buku Baru
               </h3>
-              <p className="text-xs sm:text-sm text-stone-600 mt-2">
+              <p className="text-xs sm:text-sm text-[var(--color-text-muted)] mt-2">
                 Sampaikan pesan, masukan peningkatan layanan, atau usulkan judul buku yang ingin Anda baca di Titian Ilmu.
               </p>
             </div>
 
             {submitted ? (
               <div className="p-8 rounded-2xl bg-emerald-50 border border-emerald-200 text-center space-y-4">
-                <CheckCircle className="w-12 h-12 text-[#1B4332] mx-auto" />
+                <CheckCircle className="w-12 h-12 text-[var(--color-primary)] mx-auto" />
                 <h4 className="font-serif text-xl font-bold text-emerald-950">
                   Terima Kasih, Pesan Terkirim!
                 </h4>
@@ -207,7 +207,7 @@ export const Contact: React.FC = () => {
                       message: '',
                     });
                   }}
-                  className="px-5 py-2.5 rounded-xl bg-[#1B4332] text-white text-xs font-semibold hover:bg-[#143527] transition-colors cursor-pointer"
+                  className="px-5 py-2.5 rounded-xl bg-[var(--color-primary)] text-white text-xs font-semibold hover:bg-[var(--color-primary-dark)] transition-colors cursor-pointer"
                 >
                   Kirim Pesan Lainnya
                 </button>
@@ -216,7 +216,7 @@ export const Contact: React.FC = () => {
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-stone-700">
+                    <label className="text-xs font-semibold text-[var(--color-text)]">
                       Nama Lengkap <span className="text-rose-500">*</span>
                     </label>
                     <input
@@ -227,12 +227,12 @@ export const Contact: React.FC = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
                       }
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] bg-[#FAF8F5] text-xs sm:text-sm text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-[#1B4332] focus:bg-white transition-all"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs sm:text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:bg-[var(--color-surface)] transition-all"
                     />
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-stone-700">
+                    <label className="text-xs font-semibold text-[var(--color-text)]">
                       Nomor WhatsApp / Pos-el
                     </label>
                     <input
@@ -242,14 +242,14 @@ export const Contact: React.FC = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, emailOrWa: e.target.value })
                       }
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] bg-[#FAF8F5] text-xs sm:text-sm text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-[#1B4332] focus:bg-white transition-all"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs sm:text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:bg-[var(--color-surface)] transition-all"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-stone-700">
+                    <label className="text-xs font-semibold text-[var(--color-text)]">
                       Status Pemustaka
                     </label>
                     <select
@@ -257,7 +257,7 @@ export const Contact: React.FC = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, status: e.target.value })
                       }
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] bg-[#FAF8F5] text-xs sm:text-sm text-stone-800 focus:outline-none focus:ring-2 focus:ring-[#1B4332] focus:bg-white transition-all"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs sm:text-sm text-[var(--color-text)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:bg-[var(--color-surface)] transition-all"
                     >
                       <option value="Siswa">Siswa SMPN 1 Tambak</option>
                       <option value="Guru">Guru / Pendidik</option>
@@ -268,7 +268,7 @@ export const Contact: React.FC = () => {
                   </div>
 
                   <div className="space-y-1.5">
-                    <label className="text-xs font-semibold text-stone-700">
+                    <label className="text-xs font-semibold text-[var(--color-text)]">
                       Topik Pesan <span className="text-rose-500">*</span>
                     </label>
                     <input
@@ -279,13 +279,13 @@ export const Contact: React.FC = () => {
                       onChange={(e) =>
                         setFormData({ ...formData, subject: e.target.value })
                       }
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] bg-[#FAF8F5] text-xs sm:text-sm text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-[#1B4332] focus:bg-white transition-all"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs sm:text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:bg-[var(--color-surface)] transition-all"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-1.5">
-                  <label className="text-xs font-semibold text-stone-700">
+                  <label className="text-xs font-semibold text-[var(--color-text)]">
                     Isi Pesan / Saran / Judul Buku <span className="text-rose-500">*</span>
                   </label>
                   <textarea
@@ -296,13 +296,13 @@ export const Contact: React.FC = () => {
                     onChange={(e) =>
                       setFormData({ ...formData, message: e.target.value })
                     }
-                    className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] bg-[#FAF8F5] text-xs sm:text-sm text-stone-800 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-[#1B4332] focus:bg-white transition-all"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] text-xs sm:text-sm text-[var(--color-text)] placeholder-[var(--color-text-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:bg-[var(--color-surface)] transition-all"
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[#1B4332] text-white text-xs sm:text-sm font-semibold hover:bg-[#143527] transition-all shadow-xs cursor-pointer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-[var(--color-primary)] text-white text-xs sm:text-sm font-semibold hover:bg-[var(--color-primary-dark)] transition-all shadow-xs cursor-pointer"
                 >
                   <Send className="w-4 h-4" />
                   <span>Kirimkan Formulir</span>
@@ -314,16 +314,16 @@ export const Contact: React.FC = () => {
       </div>
 
       {/* Peta Lokasi Sekolah & Perpustakaan */}
-      <section className="bg-white rounded-3xl border border-[#E6DFD3] p-6 sm:p-10 shadow-xs space-y-6">
+      <section className="bg-[var(--color-surface)] rounded-3xl border border-[var(--color-border)] p-6 sm:p-10 shadow-xs space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <span className="text-xs font-semibold text-[#1B4332] uppercase tracking-widest">
+            <span className="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-widest">
               Denah & Navigasi
             </span>
-            <h3 className="font-serif text-2xl font-bold text-stone-900 mt-1">
+            <h3 className="font-serif text-2xl font-bold text-[var(--color-text)] mt-1">
               Peta Lokasi SMP Negeri 1 Tambak
             </h3>
-            <p className="text-xs text-stone-500 mt-1">
+            <p className="text-xs text-[var(--color-text-muted)] mt-1">
               Terletak strategis di jalur utama Kecamatan Tambak, Kabupaten Banyumas.
             </p>
           </div>
@@ -332,16 +332,16 @@ export const Contact: React.FC = () => {
             href={contactInfo.mapsDirectUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[#E6DFD3] bg-[#FAF8F5] hover:bg-[#F2ECE1] text-xs font-medium text-stone-800 transition-colors self-start sm:self-auto"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] hover:bg-[var(--color-muted)] text-xs font-medium text-[var(--color-text)] transition-colors self-start sm:self-auto"
           >
-            <MapPin className="w-3.5 h-3.5 text-[#1B4332]" />
+            <MapPin className="w-3.5 h-3.5 text-[var(--color-primary)]" />
             <span>Buka di Google Maps</span>
-            <ExternalLink className="w-3 h-3 text-stone-400" />
+            <ExternalLink className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />
           </a>
         </div>
 
         {/* Interactive Map Embed */}
-        <div className="w-full h-80 sm:h-96 rounded-2xl overflow-hidden border border-[#E6DFD3] relative bg-[#FAF8F5]">
+        <div className="w-full h-80 sm:h-96 rounded-2xl overflow-hidden border border-[var(--color-border)] relative bg-[var(--color-bg)]">
           <iframe
             src={contactInfo.mapsEmbedUrl}
             width="100%"

@@ -1,10 +1,4 @@
-export interface HomeStatItem {
-  id: string;
-  label: string;
-  value: string;
-  suffix?: string;
-  unit?: string;
-}
+import { ColorThemeConfig } from '../lib/theme';
 
 export interface LibraryProfile {
   name: string;
@@ -24,8 +18,18 @@ export interface LibraryProfile {
     activeMembers: number;
     monthlyVisitors: number;
   };
-  homeStats?: HomeStatItem[];
   logoUrl?: string;
+  homeStats?: HomeStatItem[];
+  heroVisualDescription?: string;
+  colorTheme?: ColorThemeConfig;
+}
+
+export interface HomeStatItem {
+  id: string;
+  label: string;
+  value: string;
+  suffix?: string;
+  unit?: string;
 }
 
 export interface NewsItem {

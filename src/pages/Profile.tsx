@@ -71,41 +71,41 @@ export const Profile: React.FC = () => {
       />
 
       {/* Identitas Ringkas & Akreditasi */}
-      <section className="bg-white rounded-2xl border border-[#E6DFD3] p-8 sm:p-10 shadow-xs">
+      <section className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-8 sm:p-10 shadow-xs">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
           <div className="md:col-span-2 space-y-4">
-            <span className="text-xs font-semibold text-[#1B4332] uppercase tracking-widest">
+            <span className="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-widest">
               Identitas Resmi
             </span>
-            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900">
+            <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[var(--color-text)]">
               {settings.name} — {settings.schoolName}
             </h2>
-            <p className="text-sm sm:text-base text-stone-600 leading-relaxed font-sans">
+            <p className="text-sm sm:text-base text-[var(--color-text-muted)] leading-relaxed font-sans">
               {settings.about}
             </p>
           </div>
-          <div className="bg-[#FAF8F5] border border-[#E6DFD3] p-6 rounded-xl space-y-4">
+          <div className="bg-[var(--color-bg)] border border-[var(--color-border)] p-6 rounded-xl space-y-4">
             <div>
-              <p className="text-[11px] uppercase tracking-wider text-stone-500 font-semibold">
+              <p className="text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-semibold">
                 Status Akreditasi
               </p>
-              <p className="font-serif text-lg font-bold text-stone-700">
+              <p className="font-serif text-lg font-bold text-[var(--color-text)]">
                 {settings.accreditation || '-'}
               </p>
             </div>
-            <div className="pt-2 border-t border-[#E6DFD3]">
-              <p className="text-[11px] uppercase tracking-wider text-stone-500 font-semibold">
+            <div className="pt-2 border-t border-[var(--color-border)]">
+              <p className="text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-semibold">
                 Nomor Pokok Sekolah Nasional (NPSN)
               </p>
-              <p className="font-mono text-base font-bold text-stone-700">
+              <p className="font-mono text-base font-bold text-[var(--color-text)]">
                 {settings.npsn || '-'}
               </p>
             </div>
-            <div className="pt-2 border-t border-[#E6DFD3]">
-              <p className="text-[11px] uppercase tracking-wider text-stone-500 font-semibold">
+            <div className="pt-2 border-t border-[var(--color-border)]">
+              <p className="text-[11px] uppercase tracking-wider text-[var(--color-text-muted)] font-semibold">
                 Motto / Semboyan
               </p>
-              <p className="font-serif italic text-sm text-stone-700">
+              <p className="font-serif italic text-sm text-[var(--color-text)]">
                 "{settings.tagline}"
               </p>
             </div>
@@ -116,15 +116,15 @@ export const Profile: React.FC = () => {
       {/* Sejarah Singkat */}
       <section className="space-y-6">
         <div className="max-w-3xl">
-          <p className="text-xs font-semibold text-[#1B4332] uppercase tracking-widest mb-1">
+          <p className="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-widest mb-1">
             Napak Tilas
           </p>
-          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight">
+          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[var(--color-text)] tracking-tight">
             Sejarah Singkat
           </h2>
         </div>
-        <div className="bg-white rounded-2xl border border-[#E6DFD3] p-8 sm:p-10 shadow-xs prose prose-stone max-w-none text-stone-700 leading-relaxed space-y-4">
-          <p className="first-letter:text-5xl first-letter:font-serif first-letter:font-bold first-letter:text-[#1B4332] first-letter:float-left first-letter:mr-3 first-letter:mt-1">
+        <div className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-8 sm:p-10 shadow-xs prose prose-stone max-w-none text-[var(--color-text)] leading-relaxed space-y-4">
+          <p className="first-letter:text-5xl first-letter:font-serif first-letter:font-bold first-letter:text-[var(--color-primary)] first-letter:float-left first-letter:mr-3 first-letter:mt-1">
             {settings.history}
           </p>
           <p>
@@ -136,34 +136,34 @@ export const Profile: React.FC = () => {
       {/* Visi dan Misi */}
       <section className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Visi */}
-        <div className="lg:col-span-5 bg-[#1B4332] text-white rounded-2xl p-8 sm:p-10 shadow-sm flex flex-col justify-between">
+        <div className="lg:col-span-5 bg-[var(--color-primary)] text-white rounded-2xl p-8 sm:p-10 shadow-sm flex flex-col justify-between">
           <div className="space-y-4">
-            <div className="w-12 h-12 rounded-xl bg-white/10 text-emerald-200 flex items-center justify-center">
-              <Target className="w-6 h-6 text-emerald-300" />
+            <div className="w-12 h-12 rounded-xl bg-white/10 text-white flex items-center justify-center">
+              <Target className="w-6 h-6 text-white" />
             </div>
-            <span className="text-xs font-semibold uppercase tracking-widest text-emerald-200 block">
+            <span className="text-xs font-semibold uppercase tracking-widest text-white/90 block">
               Visi Perpustakaan
             </span>
             <blockquote className="font-serif text-xl sm:text-2xl font-medium leading-relaxed italic text-white pt-2">
               "{settings.vision}"
             </blockquote>
           </div>
-          <div className="pt-8 border-t border-emerald-800/80 text-xs text-emerald-200/90">
+          <div className="pt-8 border-t border-white/20 text-xs text-white/80">
             Ditetapkan sebagai pedoman arah pengembangan jangka panjang Perpustakaan Titian Ilmu.
           </div>
         </div>
 
         {/* Misi */}
-        <div className="lg:col-span-7 bg-white rounded-2xl border border-[#E6DFD3] p-8 sm:p-10 shadow-xs space-y-6">
+        <div className="lg:col-span-7 bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-8 sm:p-10 shadow-xs space-y-6">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#FAF8F5] border border-[#E6DFD3] text-[#1B4332] flex items-center justify-center">
+            <div className="w-10 h-10 rounded-xl bg-[var(--color-bg)] border border-[var(--color-border)] text-[var(--color-primary)] flex items-center justify-center">
               <Compass className="w-5 h-5" />
             </div>
             <div>
-              <span className="text-xs font-semibold text-[#1B4332] uppercase tracking-widest">
+              <span className="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-widest">
                 Misi Lembaga
               </span>
-              <h3 className="font-serif text-xl font-bold text-stone-900">
+              <h3 className="font-serif text-xl font-bold text-[var(--color-text)]">
                 Langkah Nyata Mewujudkan Visi
               </h3>
             </div>
@@ -172,10 +172,10 @@ export const Profile: React.FC = () => {
           <div className="space-y-4">
             {(settings.missions || []).map((mission, index) => (
               <div key={index} className="flex items-start gap-4">
-                <span className="w-6 h-6 rounded-full bg-[#1B4332]/10 text-[#1B4332] font-mono text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
+                <span className="w-6 h-6 rounded-full bg-[var(--color-primary-soft)] text-[var(--color-primary)] font-mono text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
                   {index + 1}
                 </span>
-                <p className="text-sm sm:text-base text-stone-700 leading-relaxed font-sans">
+                <p className="text-sm sm:text-base text-[var(--color-text)] leading-relaxed font-sans">
                   {mission}
                 </p>
               </div>
@@ -187,10 +187,10 @@ export const Profile: React.FC = () => {
       {/* Nilai Utama Perpustakaan */}
       <section className="space-y-8">
         <div className="max-w-3xl">
-          <p className="text-xs font-semibold text-[#1B4332] uppercase tracking-widest mb-1">
+          <p className="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-widest mb-1">
             Budaya Organisasi
           </p>
-          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight">
+          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[var(--color-text)] tracking-tight">
             Prinsip Pelayanan Pustaka
           </h2>
         </div>
@@ -199,15 +199,15 @@ export const Profile: React.FC = () => {
           {coreValues.map((v, i) => (
             <div
               key={i}
-              className="bg-white p-6 rounded-2xl border border-[#E6DFD3] space-y-2 shadow-2xs"
+              className="bg-[var(--color-surface)] p-6 rounded-2xl border border-[var(--color-border)] space-y-2 shadow-2xs"
             >
-              <span className="font-mono text-xs font-bold text-[#1B4332]">
+              <span className="font-mono text-xs font-bold text-[var(--color-primary)]">
                 0{i + 1}.
               </span>
-              <h3 className="font-serif text-base font-bold text-stone-900">
+              <h3 className="font-serif text-base font-bold text-[var(--color-text)]">
                 {v.name}
               </h3>
-              <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
+              <p className="text-xs sm:text-sm text-[var(--color-text-muted)] leading-relaxed">
                 {v.detail}
               </p>
             </div>
@@ -218,13 +218,13 @@ export const Profile: React.FC = () => {
       {/* Sarana & Fasilitas Perpustakaan */}
       <section className="space-y-8">
         <div className="max-w-3xl">
-          <p className="text-xs font-semibold text-[#1B4332] uppercase tracking-widest mb-1">
+          <p className="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-widest mb-1">
             Sarana & Prasarana
           </p>
-          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-stone-900 tracking-tight">
+          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[var(--color-text)] tracking-tight">
             Fasilitas Penunjang Pemustaka
           </h2>
-          <p className="text-sm text-stone-600 mt-2">
+          <p className="text-sm text-[var(--color-text-muted)] mt-2">
             Dirancang dengan tata ruang ramah anak demi menghadirkan kenyamanan maksimal selama berada di perpustakaan.
           </p>
         </div>
@@ -233,15 +233,15 @@ export const Profile: React.FC = () => {
           {facilities.map((fac, idx) => (
             <div
               key={idx}
-              className="bg-white p-6 rounded-2xl border border-[#E6DFD3] hover:border-[#1B4332]/50 transition-colors shadow-2xs space-y-3"
+              className="bg-[var(--color-surface)] p-6 rounded-2xl border border-[var(--color-border)] hover:border-[var(--color-primary)]/50 transition-colors shadow-2xs space-y-3"
             >
-              <div className="w-8 h-8 rounded-lg bg-[#FAF8F5] border border-[#E6DFD3] text-[#1B4332] flex items-center justify-center">
-                <CheckCircle2 className="w-4 h-4 text-[#1B4332]" />
+              <div className="w-8 h-8 rounded-lg bg-[var(--color-bg)] border border-[var(--color-border)] text-[var(--color-primary)] flex items-center justify-center">
+                <CheckCircle2 className="w-4 h-4 text-[var(--color-primary)]" />
               </div>
-              <h3 className="font-serif text-lg font-bold text-stone-900">
+              <h3 className="font-serif text-lg font-bold text-[var(--color-text)]">
                 {fac.title}
               </h3>
-              <p className="text-xs sm:text-sm text-stone-600 leading-relaxed">
+              <p className="text-xs sm:text-sm text-[var(--color-text-muted)] leading-relaxed">
                 {fac.desc}
               </p>
             </div>

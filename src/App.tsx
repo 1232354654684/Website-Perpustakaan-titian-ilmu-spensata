@@ -94,11 +94,11 @@ function MainApp() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-stone-800 flex flex-col font-sans selection:bg-[#1B4332] selection:text-white">
+    <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)] flex flex-col font-sans selection:bg-[var(--color-primary)] selection:text-white transition-colors duration-200">
       {/* Subtle top indicator if fetching Firestore */}
       {loading && (
-        <div className="fixed top-0 left-0 w-full h-1 bg-[#1B4332]/20 z-50 overflow-hidden">
-          <div className="w-1/3 h-full bg-[#1B4332] animate-[indeterminate_1.5s_infinite_linear]" />
+        <div className="fixed top-0 left-0 w-full h-1 bg-[var(--color-primary)]/20 z-50 overflow-hidden">
+          <div className="w-1/3 h-full bg-[var(--color-primary)] animate-[indeterminate_1.5s_infinite_linear]" />
         </div>
       )}
 

@@ -23,10 +23,15 @@ import {
   Info,
   Check,
   BookOpen,
+  ChevronUp,
+  ChevronDown,
+  BarChart3,
+  Palette,
 } from 'lucide-react';
 import { useLibrary, BOOTSTRAP_ADMIN_EMAIL } from '../context/LibraryContext';
 import { uploadAndProcessPhoto, validateImageFile, ImageUploadResult, blobToBase64 } from '../lib/firebase';
-import { NewsItem, SOPEntry, StaffMember, OperatingHours, ContactInfo, LibraryProfile } from '../types';
+import { NewsItem, SOPEntry, StaffMember, OperatingHours, ContactInfo, LibraryProfile, HomeStatItem } from '../types';
+import { THEME_PRESETS, ColorThemeConfig, DEFAULT_THEME, buildCustomTheme, applyThemeToDOM } from '../lib/theme';
 
 interface ConfirmDialogState {
   isOpen: boolean;
@@ -84,6 +89,12 @@ export const Admin: React.FC = () => {
   const [profileForm, setProfileForm] = useState<LibraryProfile>(settings);
   const [hoursForm, setHoursForm] = useState<OperatingHours[]>(operatingHours);
   const [contactForm, setContactForm] = useState<ContactInfo>(contactInfo);
+  const [homeStatsForm, setHomeStatsForm] = useState<HomeStatItem[]>(settings.homeStats || []);
+
+  // States for Color Theme
+  const [themeForm, setThemeForm] = useState<ColorThemeConfig>(settings.colorTheme || DEFAULT_THEME);
+  const [customPrimary, setCustomPrimary] = useState(settings.colorTheme?.primary || '#1B4332');
+  const [customAccent, setCustomAccent] = useState(settings.colorTheme?.accent || '#2D6A4F');
 
   // States for Logo Upload di Pengaturan Umum
   const [logoUploading, setLogoUploading] = useState(false);
@@ -95,7 +106,88 @@ export const Admin: React.FC = () => {
     setProfileForm(settings);
     setHoursForm(operatingHours);
     setContactForm(contactInfo);
+    setHomeStatsForm(settings.homeStats || []);
+    if (settings.colorTheme) {
+      setThemeForm(settings.colorTheme);
+      setCustomPrimary(settings.colorTheme.primary || '#1B4332');
+      setCustomAccent(settings.colorTheme.accent || '#2D6A4F');
+    }
   }, [settings, operatingHours, contactInfo]);
+
+  // Handler Pilihan Tema Warna
+  const handleSelectThemePreset = (preset: (typeof THEME_PRESETS)[0]) => {
+    setThemeForm(preset.theme);
+    applyThemeToDOM(preset.theme);
+  };
+
+  const handleCustomPrimaryChange = (hex: string) => {
+    setCustomPrimary(hex);
+    const newCustom = buildCustomTheme(hex, customAccent);
+    setThemeForm(newCustom);
+    applyThemeToDOM(newCustom);
+  };
+
+  const handleCustomAccentChange = (hex: string) => {
+    setCustomAccent(hex);
+    const newCustom = buildCustomTheme(customPrimary, hex);
+    setThemeForm(newCustom);
+    applyThemeToDOM(newCustom);
+  };
+
+  const handleSaveThemeOnly = async () => {
+    setActionLoading(true);
+    try {
+      const updatedProfile: LibraryProfile = {
+        ...profileForm,
+        homeStats: homeStatsForm,
+        colorTheme: themeForm,
+      };
+      await updateSettings(updatedProfile, hoursForm, contactForm);
+      showToast('Pilihan tema warna website berhasil disimpan ke database!');
+    } catch (err: any) {
+      console.error('[handleSaveThemeOnly] Error:', err);
+      showToast('Gagal menyimpan tema warna: ' + (err.message || 'Terjadi kesalahan.'), 'error');
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  // Handler Manipulasi Statistik Beranda
+  const handleAddStat = () => {
+    const newId = `stat_${Date.now()}`;
+    setHomeStatsForm((prev) => [
+      ...prev,
+      {
+        id: newId,
+        label: 'Statistik Baru',
+        value: '100',
+        suffix: '+',
+        unit: 'Item',
+      },
+    ]);
+  };
+
+  const handleRemoveStat = (id: string) => {
+    setHomeStatsForm((prev) => prev.filter((item) => item.id !== id));
+  };
+
+  const handleMoveStat = (index: number, direction: 'up' | 'down') => {
+    setHomeStatsForm((prev) => {
+      const copy = [...prev];
+      const targetIndex = direction === 'up' ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= copy.length) return prev;
+      const temp = copy[index];
+      copy[index] = copy[targetIndex];
+      copy[targetIndex] = temp;
+      return copy;
+    });
+  };
+
+  const handleUpdateStatField = (id: string, field: keyof HomeStatItem, val: string) => {
+    setHomeStatsForm((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, [field]: val } : item))
+    );
+  };
 
   // Handler Upload Logo Perpustakaan
   const handleLogoFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -307,8 +399,13 @@ export const Admin: React.FC = () => {
     e.preventDefault();
     setActionLoading(true);
     try {
-      await updateSettings(profileForm, hoursForm, contactForm);
-      showToast('Pengaturan umum perpustakaan berhasil diperbarui!');
+      const updatedProfile: LibraryProfile = {
+        ...profileForm,
+        homeStats: homeStatsForm,
+        colorTheme: themeForm,
+      };
+      await updateSettings(updatedProfile, hoursForm, contactForm);
+      showToast('Pengaturan umum dan tema warna perpustakaan berhasil disimpan!');
     } catch (err: any) {
       console.error('[handleSaveSettings] Error:', err);
       showToast('Gagal menyimpan pengaturan: ' + (err.message || 'Terjadi kesalahan.'), 'error');
@@ -804,6 +901,231 @@ export const Admin: React.FC = () => {
             </div>
           </div>
 
+          {/* Section: Tema Warna */}
+          <div className="bg-white rounded-3xl border border-[#E6DFD3] p-6 sm:p-8 space-y-6 shadow-xs">
+            <div className="border-b border-[#E6DFD3] pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h3 className="font-serif text-xl font-bold text-stone-900 flex items-center gap-2">
+                  <Palette className="w-5 h-5 text-[var(--color-primary)]" />
+                  <span>Tema Warna Website</span>
+                </h3>
+                <p className="text-xs text-stone-500 font-sans mt-0.5">
+                  Pilih salah satu dari 5 preset tema warna modern, minimalis, dan elegan atau tentukan kombinasi warna kustom Anda sendiri. Tema otomatis diterapkan ke seluruh halaman publik.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleSaveThemeOnly}
+                disabled={actionLoading}
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-dark)] text-xs font-semibold transition-all shadow-2xs self-start sm:self-auto cursor-pointer disabled:opacity-50 shrink-0"
+              >
+                {actionLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                <span>Simpan Pilihan Tema</span>
+              </button>
+            </div>
+
+            {/* Grid 5 Presets */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {THEME_PRESETS.map((preset) => {
+                const isSelected = themeForm.presetId === preset.id;
+                return (
+                  <div
+                    key={preset.id}
+                    onClick={() => handleSelectThemePreset(preset)}
+                    className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between space-y-3 ${
+                      isSelected
+                        ? 'border-[var(--color-primary)] ring-2 ring-[var(--color-primary)]/20 bg-stone-50/80 shadow-xs'
+                        : 'border-stone-200 hover:border-stone-300 bg-white'
+                    }`}
+                  >
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between">
+                        <span className="font-serif font-bold text-sm text-stone-900">
+                          {preset.name}
+                        </span>
+                        {isSelected && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-white bg-[var(--color-primary)] px-2 py-0.5 rounded-full">
+                            <Check className="w-3 h-3" />
+                            <span>Aktif</span>
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-[11px] text-stone-500 leading-relaxed font-sans line-clamp-2">
+                        {preset.tagline}
+                      </p>
+                    </div>
+
+                    {/* Color Swatches Palette */}
+                    <div className="pt-2 border-t border-stone-100 flex items-center justify-between">
+                      <div className="flex items-center gap-1.5">
+                        <div
+                          className="w-6 h-6 rounded-lg shadow-2xs border border-black/10"
+                          style={{ backgroundColor: preset.theme.primary }}
+                          title={`Warna Utama: ${preset.theme.primary}`}
+                        />
+                        <div
+                          className="w-6 h-6 rounded-lg shadow-2xs border border-black/10"
+                          style={{ backgroundColor: preset.theme.accent }}
+                          title={`Warna Aksen: ${preset.theme.accent}`}
+                        />
+                        <div
+                          className="w-6 h-6 rounded-lg shadow-2xs border border-black/10"
+                          style={{ backgroundColor: preset.theme.bg }}
+                          title={`Warna Latar: ${preset.theme.bg}`}
+                        />
+                        <div
+                          className="w-6 h-6 rounded-lg shadow-2xs border border-black/10"
+                          style={{ backgroundColor: preset.theme.surface }}
+                          title={`Warna Kartu/Permukaan: ${preset.theme.surface}`}
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleSelectThemePreset(preset);
+                        }}
+                        className={`text-xs font-semibold px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
+                          isSelected
+                            ? 'bg-stone-900 text-white'
+                            : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                        }`}
+                      >
+                        {isSelected ? 'Terpilih' : 'Pilih'}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {/* Opsi Kustom Card */}
+              <div
+                onClick={() => {
+                  const custom = buildCustomTheme(customPrimary, customAccent);
+                  setThemeForm(custom);
+                  applyThemeToDOM(custom);
+                }}
+                className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex flex-col justify-between space-y-3 ${
+                  themeForm.presetId === 'custom'
+                    ? 'border-[var(--color-primary)] ring-2 ring-[var(--color-primary)]/20 bg-stone-50/80 shadow-xs'
+                    : 'border-stone-200 hover:border-stone-300 bg-white'
+                }`}
+              >
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between">
+                    <span className="font-serif font-bold text-sm text-stone-900">
+                      Kustom
+                    </span>
+                    {themeForm.presetId === 'custom' && (
+                      <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-white bg-[var(--color-primary)] px-2 py-0.5 rounded-full">
+                        <Check className="w-3 h-3" />
+                        <span>Aktif</span>
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-stone-500 leading-relaxed font-sans">
+                    Tentukan kombinasi warna utama dan aksen sesuai keinginan dengan pemilih warna.
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-stone-100 flex items-center justify-between">
+                  <div className="flex items-center gap-1.5">
+                    <div
+                      className="w-6 h-6 rounded-lg shadow-2xs border border-black/10"
+                      style={{ backgroundColor: customPrimary }}
+                      title={`Utama: ${customPrimary}`}
+                    />
+                    <div
+                      className="w-6 h-6 rounded-lg shadow-2xs border border-black/10"
+                      style={{ backgroundColor: customAccent }}
+                      title={`Aksen: ${customAccent}`}
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const custom = buildCustomTheme(customPrimary, customAccent);
+                      setThemeForm(custom);
+                      applyThemeToDOM(custom);
+                    }}
+                    className={`text-xs font-semibold px-2.5 py-1 rounded-lg transition-colors cursor-pointer ${
+                      themeForm.presetId === 'custom'
+                        ? 'bg-stone-900 text-white'
+                        : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
+                    }`}
+                  >
+                    {themeForm.presetId === 'custom' ? 'Terpilih' : 'Pilih'}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Panel Pengaturan Warna Kustom bila dipilih */}
+            {themeForm.presetId === 'custom' && (
+              <div className="p-5 rounded-2xl bg-[#FAF8F5] border border-[#E6DFD3] space-y-4 animate-in fade-in">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-stone-800 uppercase tracking-wider">
+                    Pengaturan Palet Warna Kustom
+                  </h4>
+                  <span className="text-[11px] text-stone-500">
+                    Perubahan langsung dipratinjau di layar Anda
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Warna Utama */}
+                  <div className="bg-white p-3.5 rounded-xl border border-[#E6DFD3] flex items-center justify-between gap-3">
+                    <div>
+                      <label className="text-xs font-bold text-stone-800 block">
+                        Warna Utama (Primary)
+                      </label>
+                      <p className="text-[11px] text-stone-500">
+                        Untuk navbar, tombol utama, judul & aksen fokus
+                      </p>
+                      <span className="font-mono text-xs text-stone-700 font-semibold mt-1 inline-block">
+                        {customPrimary}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={customPrimary}
+                        onChange={(e) => handleCustomPrimaryChange(e.target.value)}
+                        className="w-10 h-10 rounded-xl border border-stone-300 cursor-pointer p-0.5 bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Warna Aksen */}
+                  <div className="bg-white p-3.5 rounded-xl border border-[#E6DFD3] flex items-center justify-between gap-3">
+                    <div>
+                      <label className="text-xs font-bold text-stone-800 block">
+                        Warna Aksen (Accent)
+                      </label>
+                      <p className="text-[11px] text-stone-500">
+                        Untuk badge, highlight & variasi visual
+                      </p>
+                      <span className="font-mono text-xs text-stone-700 font-semibold mt-1 inline-block">
+                        {customAccent}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={customAccent}
+                        onChange={(e) => handleCustomAccentChange(e.target.value)}
+                        className="w-10 h-10 rounded-xl border border-stone-300 cursor-pointer p-0.5 bg-white"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="bg-white rounded-3xl border border-[#E6DFD3] p-6 sm:p-8 space-y-6 shadow-xs">
             <h3 className="font-serif text-xl font-bold text-stone-900 border-b border-[#E6DFD3] pb-3">
               Identitas Perpustakaan & Tagline
@@ -895,6 +1217,173 @@ export const Admin: React.FC = () => {
                 className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] text-xs sm:text-sm text-stone-900 focus:ring-2 focus:ring-[#1B4332] focus:outline-none"
               />
             </div>
+
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-stone-700">
+                  Deskripsi Kartu Hero Beranda ("Ruang Teduh")
+                </label>
+                <span className="text-[10px] text-stone-500">
+                  Kalimat pengantar kartu visual di samping Beranda
+                </span>
+              </div>
+              <textarea
+                rows={2}
+                value={profileForm.heroVisualDescription || ''}
+                onChange={(e) =>
+                  setProfileForm({ ...profileForm, heroVisualDescription: e.target.value })
+                }
+                placeholder="Menyediakan ragam bahan pustaka terkurasi, ruang baca berpenyejuk udara, otomasi katalog pencarian judul, serta selasar hijau ramah anak."
+                className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] text-xs sm:text-sm text-stone-900 focus:ring-2 focus:ring-[#1B4332] focus:outline-none"
+              />
+            </div>
+          </div>
+
+          {/* Section: Statistik Beranda */}
+          <div className="bg-white rounded-3xl border border-[#E6DFD3] p-6 sm:p-8 space-y-5 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E6DFD3] pb-3">
+              <div>
+                <h3 className="font-serif text-xl font-bold text-stone-900 flex items-center gap-2">
+                  <BarChart3 className="w-5 h-5 text-[#1B4332]" />
+                  <span>Statistik Beranda</span>
+                </h3>
+                <p className="text-xs text-stone-500 font-sans mt-0.5">
+                  Atur angka capaian dan statistik yang tampil pada pita statistik di Beranda. Bagian statistik akan otomatis disembunyikan di publik jika daftar ini kosong.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleAddStat}
+                className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#1B4332] text-white hover:bg-[#143527] text-xs font-semibold transition-colors cursor-pointer self-start sm:self-auto shadow-2xs"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Tambah Statistik</span>
+              </button>
+            </div>
+
+            {homeStatsForm.length === 0 ? (
+              <div className="p-8 rounded-2xl bg-[#FAF8F5] border border-dashed border-[#E6DFD3] text-center space-y-2">
+                <BarChart3 className="w-8 h-8 text-stone-400 mx-auto" />
+                <p className="text-sm font-bold text-stone-700 font-sans">Daftar Statistik Masih Kosong</p>
+                <p className="text-xs text-stone-500 font-sans max-w-md mx-auto">
+                  Karena daftar ini kosong, bagian statistik pada halaman Beranda publik saat ini disembunyikan. Klik tombol "Tambah Statistik" di atas untuk menambahkan item baru.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-3.5">
+                {homeStatsForm.map((item, idx) => (
+                  <div
+                    key={item.id}
+                    className="p-4 sm:p-5 rounded-2xl border border-[#E6DFD3] bg-[#FAF8F5] hover:border-[#1B4332]/30 transition-all flex flex-col lg:flex-row items-stretch lg:items-center gap-4"
+                  >
+                    {/* Urutan Control Buttons */}
+                    <div className="flex lg:flex-col items-center justify-center gap-1 shrink-0">
+                      <span className="text-[10px] font-mono font-bold text-stone-400 px-1">
+                        #{idx + 1}
+                      </span>
+                      <div className="flex gap-1">
+                        <button
+                          type="button"
+                          disabled={idx === 0}
+                          onClick={() => handleMoveStat(idx, 'up')}
+                          className="p-1.5 rounded-lg border border-[#E6DFD3] bg-white text-stone-600 hover:text-stone-900 hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                          title="Geser urutan ke atas"
+                        >
+                          <ChevronUp className="w-4 h-4" />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={idx === homeStatsForm.length - 1}
+                          onClick={() => handleMoveStat(idx, 'down')}
+                          className="p-1.5 rounded-lg border border-[#E6DFD3] bg-white text-stone-600 hover:text-stone-900 hover:bg-stone-50 disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                          title="Geser urutan ke bawah"
+                        >
+                          <ChevronDown className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Form Inputs */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 flex-1">
+                      <div>
+                        <label className="text-[11px] font-semibold text-stone-700 block">
+                          Label / Nama Statistik
+                        </label>
+                        <input
+                          type="text"
+                          value={item.label}
+                          onChange={(e) => handleUpdateStatField(item.id, 'label', e.target.value)}
+                          placeholder="Misal: Total Koleksi Buku"
+                          className="w-full mt-1 px-3 py-2 rounded-xl border border-[#E6DFD3] bg-white text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#1B4332]"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[11px] font-semibold text-stone-700 block">
+                          Angka / Nilai
+                        </label>
+                        <input
+                          type="text"
+                          value={item.value}
+                          onChange={(e) => handleUpdateStatField(item.id, 'value', e.target.value)}
+                          placeholder="Misal: 8.450 atau 780"
+                          className="w-full mt-1 px-3 py-2 rounded-xl border border-[#E6DFD3] bg-white text-xs font-mono font-bold text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#1B4332]"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[11px] font-semibold text-stone-700 block">
+                          Akhiran (Suffix)
+                        </label>
+                        <input
+                          type="text"
+                          value={item.suffix || ''}
+                          onChange={(e) => handleUpdateStatField(item.id, 'suffix', e.target.value)}
+                          placeholder="Misal: + atau %"
+                          className="w-full mt-1 px-3 py-2 rounded-xl border border-[#E6DFD3] bg-white text-xs font-mono text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#1B4332]"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="text-[11px] font-semibold text-stone-700 block">
+                          Keterangan / Satuan (Unit)
+                        </label>
+                        <input
+                          type="text"
+                          value={item.unit || ''}
+                          onChange={(e) => handleUpdateStatField(item.id, 'unit', e.target.value)}
+                          placeholder="Misal: Eksemplar atau Siswa"
+                          className="w-full mt-1 px-3 py-2 rounded-xl border border-[#E6DFD3] bg-white text-xs text-stone-900 focus:outline-none focus:ring-1 focus:ring-[#1B4332]"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Live Mini Preview Box & Delete */}
+                    <div className="flex items-center justify-between lg:justify-end gap-3 pt-2 lg:pt-0 border-t lg:border-t-0 border-[#E6DFD3] shrink-0">
+                      <div className="bg-white px-3.5 py-1.5 rounded-xl border border-[#E6DFD3] text-center min-w-[100px] shadow-2xs">
+                        <p className="text-base font-serif font-bold text-[#1B4332] tabular-nums leading-none">
+                          {item.value || '0'}{item.suffix || ''}
+                        </p>
+                        <p className="text-[9px] uppercase tracking-wider font-semibold text-stone-600 truncate max-w-[110px] mt-1">
+                          {item.label || 'Label'}
+                        </p>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveStat(item.id)}
+                        className="p-2 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                        title="Hapus statistik ini"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Jam Layanan */}

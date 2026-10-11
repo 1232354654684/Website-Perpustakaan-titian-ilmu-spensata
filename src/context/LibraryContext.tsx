@@ -23,8 +23,14 @@ import {
   sopData as defaultSOP,
   staffData as defaultStaff,
 } from '../data/libraryData';
+import { applyThemeToDOM, DEFAULT_THEME, resolveTheme } from '../lib/theme';
 
 export const BOOTSTRAP_ADMIN_EMAIL = 'roni.ardiansyah57@guru.smk.belajar.id';
+
+// Terapkan tema awal sesegera mungkin agar tidak ada flickering
+if (typeof document !== 'undefined') {
+  applyThemeToDOM(defaultProfile.colorTheme || DEFAULT_THEME);
+}
 
 /**
  * Mengubah string tanggal (Indonesian "18 Februari 2026", ISO "2026-02-18", dsb.)
@@ -239,7 +245,25 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       (docSnap) => {
         if (docSnap.exists()) {
           const data = docSnap.data();
-          if (data.profile) setSettings(data.profile);
+          if (data.profile) {
+            const resolvedHomeStats =
+              Array.isArray(data.profile.homeStats)
+                ? data.profile.homeStats
+                : Array.isArray(data.homeStats)
+                ? data.homeStats
+                : defaultProfile.homeStats || [];
+
+            const resolvedTheme =
+              data.profile.colorTheme || data.colorTheme || defaultProfile.colorTheme || DEFAULT_THEME;
+
+            applyThemeToDOM(resolvedTheme);
+
+            setSettings({
+              ...data.profile,
+              homeStats: resolvedHomeStats,
+              colorTheme: resolvedTheme,
+            });
+          }
           if (data.operatingHours) setOperatingHours(data.operatingHours);
           if (data.contactInfo) setContactInfo(data.contactInfo);
         }
@@ -403,12 +427,15 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
         doc(db, 'settings', 'general'),
         {
           profile,
+          homeStats: profile.homeStats || [],
+          colorTheme: profile.colorTheme || DEFAULT_THEME,
           operatingHours: hours,
           contactInfo: contact,
           updatedAt: new Date().toISOString(),
         },
         { merge: true }
       );
+      applyThemeToDOM(profile.colorTheme || DEFAULT_THEME);
       setSettings(profile);
       setOperatingHours(hours);
       setContactInfo(contact);
