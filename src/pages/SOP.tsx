@@ -111,24 +111,19 @@ export const SOP: React.FC = () => {
         </div>
       </section>
 
-      {/* Bagian: JADWAL PEMINJAMAN DAN PENGEMBALIAN PER KELAS (TA 2025/2026) */}
+      {/* Bagian: JADWAL PEMINJAMAN DAN PENGEMBALIAN PER KELAS */}
       <section className="bg-[var(--color-surface)] rounded-3xl border border-[var(--color-border)] p-6 sm:p-8 lg:p-10 shadow-xs space-y-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-[var(--color-border)]">
-          <div>
-            <span className="text-xs font-semibold uppercase tracking-widest text-[var(--color-primary)]">
-              Jadwal Sirkulasi Terstruktur
-            </span>
-            <h3 className="font-serif text-xl sm:text-2xl font-bold text-[var(--color-text)] mt-1 flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-[var(--color-primary)]" />
-              <span>Jadwal Peminjaman dan Pengembalian per Kelas (TA 2025/2026)</span>
-            </h3>
-            <p className="text-xs sm:text-sm text-[var(--color-text-muted)] mt-1 font-sans">
-              Pengaturan jadwal sirkulasi kolektif per jenjang kelas guna mencegah antrean padat dan menjaga ketertiban layanan sirkulasi harian.
-            </p>
-          </div>
-          <div className="px-3.5 py-1.5 rounded-xl bg-[var(--color-bg)] border border-[var(--color-border)] text-[11px] font-semibold text-[var(--color-text-muted)] self-start md:self-auto font-mono">
-            TA 2025/2026
-          </div>
+        <div className="pb-4 border-b border-[var(--color-border)]">
+          <span className="text-xs font-semibold uppercase tracking-widest text-[var(--color-primary)]">
+            Jadwal Sirkulasi Terstruktur
+          </span>
+          <h3 className="font-serif text-xl sm:text-2xl font-bold text-[var(--color-text)] mt-1 flex items-center gap-2">
+            <Calendar className="w-5 h-5 text-[var(--color-primary)]" />
+            <span>Jadwal Peminjaman & Pengembalian per Kelas</span>
+          </h3>
+          <p className="text-xs sm:text-sm text-[var(--color-text-muted)] mt-1 font-sans">
+            Pengaturan jadwal sirkulasi kolektif per jenjang kelas guna mencegah antrean padat dan menjaga ketertiban layanan sirkulasi harian.
+          </p>
         </div>
 
         {/* Tabel Jadwal Per Kelas */}

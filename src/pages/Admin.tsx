@@ -841,7 +841,7 @@ export const Admin: React.FC = () => {
                 </h4>
               </div>
               <p className="text-xs text-emerald-800/90 font-sans leading-relaxed">
-                Terapkan seluruh data resmi sekolah (Visi, 5 butir Misi, 5 butir Tujuan, Jam Layanan 07.30–14.30 WIB & Ruang Multimedia, Jadwal Sirkulasi Per Kelas TA 2025/2026, 5 SOP resmi lengkap dengan tabel sanksi, dan 2 Kepala Sekolah & Pustaka resmi) langsung ke Firestore.
+                Terapkan seluruh data resmi sekolah (Visi, 5 butir Misi, 5 butir Tujuan, Jam Layanan 07.30–14.30 WIB & Ruang Multimedia, Jadwal Sirkulasi Per Kelas, 5 SOP resmi lengkap dengan tabel sanksi, dan 2 Kepala Sekolah & Pustaka resmi) langsung ke Firestore.
               </p>
             </div>
             <button
@@ -853,7 +853,7 @@ export const Admin: React.FC = () => {
                   type: 'resetOfficial',
                   id: 'reset-official',
                   title: 'Terapkan Data Resmi Sekolah?',
-                  message: 'Seluruh data Profil (Visi, Misi, Tujuan), Jam Layanan, Jadwal Kelas TA 2025/2026, 5 SOP Resmi, dan Struktur Organisasi akan diisi dengan data resmi SMP Negeri 1 Tambak dan disimpan ke database Firestore.',
+                  message: 'Seluruh data Profil (Visi, Misi, Tujuan), Jam Layanan, Jadwal Kelas, 5 SOP Resmi, dan Struktur Organisasi akan diisi dengan data resmi SMP Negeri 1 Tambak dan disimpan ke database Firestore.',
                   targetName: 'Data Resmi Titian Ilmu',
                 });
               }}
@@ -1588,13 +1588,13 @@ export const Admin: React.FC = () => {
             </div>
           </div>
 
-          {/* Section: Jadwal Peminjaman & Pengembalian per Kelas (TA 2025/2026) */}
+          {/* Section: Jadwal Peminjaman & Pengembalian per Kelas */}
           <div className="bg-white rounded-3xl border border-[#E6DFD3] p-6 sm:p-8 space-y-4 shadow-xs">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E6DFD3] pb-3">
               <div>
                 <h3 className="font-serif text-xl font-bold text-stone-900 flex items-center gap-2">
                   <Calendar className="w-5 h-5 text-[#1B4332]" />
-                  <span>Jadwal Peminjaman & Pengembalian per Kelas (TA 2025/2026)</span>
+                  <span>Jadwal Peminjaman & Pengembalian per Kelas</span>
                 </h3>
                 <p className="text-xs text-stone-500 font-sans mt-0.5">
                   Tabel ini mengatur pembagian giliran sirkulasi buku per jenjang kelas (tampil di halaman SOP & Beranda).
