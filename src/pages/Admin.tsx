@@ -29,12 +29,14 @@ import {
   Palette,
   Calendar,
   Monitor,
+  Archive,
 } from 'lucide-react';
 import { useLibrary, BOOTSTRAP_ADMIN_EMAIL } from '../context/LibraryContext';
 import { uploadAndProcessPhoto, validateImageFile, ImageUploadResult, blobToBase64 } from '../lib/firebase';
 import { NewsItem, SOPEntry, StaffMember, OperatingHours, ContactInfo, LibraryProfile, HomeStatItem, ClassScheduleItem } from '../types';
 import { defaultMultimediaInfo, defaultClassSchedules } from '../data/libraryData';
 import { THEME_PRESETS, ColorThemeConfig, DEFAULT_THEME, buildCustomTheme, applyThemeToDOM } from '../lib/theme';
+import { BackupRestoreTab } from '../components/BackupRestoreTab';
 
 interface ConfirmDialogState {
   isOpen: boolean;
@@ -80,7 +82,7 @@ export const Admin: React.FC = () => {
     removeAdminEmail,
   } = useLibrary();
 
-  const [activeTab, setActiveTab] = useState<'settings' | 'news' | 'sop' | 'staff' | 'admins'>('settings');
+  const [activeTab, setActiveTab] = useState<'settings' | 'news' | 'sop' | 'staff' | 'admins' | 'backup'>('settings');
   const [authError, setAuthError] = useState<string | null>(null);
   const [toast, setToast] = useState<ToastState | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
@@ -811,6 +813,18 @@ export const Admin: React.FC = () => {
         >
           <Shield className="w-4 h-4" />
           <span>Daftar Email Admin ({adminEmails.length})</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('backup')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold whitespace-nowrap transition-colors cursor-pointer ${
+            activeTab === 'backup'
+              ? 'bg-[#1B4332] text-white shadow-2xs'
+              : 'bg-white text-stone-600 hover:text-stone-900 border border-[#E6DFD3]'
+          }`}
+        >
+          <Archive className="w-4 h-4" />
+          <span>Backup & Restore</span>
         </button>
       </div>
 
@@ -2294,6 +2308,11 @@ export const Admin: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
+      {/* TAB 6: BACKUP & RESTORE */}
+      {activeTab === 'backup' && (
+        <BackupRestoreTab onShowToast={showToast} />
       )}
 
       {/* --- MODAL EDIT/TAMBAH BERITA (DENGAN UPLOAD FOTO & PREVIEW & STEP LOADING) --- */}
