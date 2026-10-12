@@ -66,15 +66,12 @@ export const VisualFallback: React.FC<VisualFallbackProps> = ({
         <div className="absolute -right-12 -bottom-12 w-72 h-72 rounded-full bg-emerald-400/10 blur-3xl pointer-events-none" />
         <div className="absolute -left-12 -top-12 w-72 h-72 rounded-full bg-amber-400/10 blur-3xl pointer-events-none" />
 
-        {/* Top Bar: Clean Badge and Location, wraps gracefully on narrow viewports */}
-        <div className="relative z-10 flex flex-wrap items-center justify-between gap-3">
+        {/* Top Bar: Badge Pusat Literasi Siswa */}
+        <div className="relative z-10 flex items-center">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs font-medium text-emerald-100">
             <BookOpen className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
             <span>Pusat Literasi Siswa</span>
           </div>
-          <span className="text-[11px] font-sans tracking-wide text-emerald-200/90 font-medium">
-            Kec. Tambak, Banyumas
-          </span>
         </div>
 
         {/* Middle Content: Ample vertical space, no truncation, tanpa angka permanen "8.000" */}
