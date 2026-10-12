@@ -8,6 +8,22 @@ export const defaultHomeStatsData: HomeStatItem[] = [
   { id: 'stat-4', label: 'Status Akreditasi', value: 'A', suffix: '', unit: 'Perpustakaan Sekolah' },
 ];
 
+export const defaultClassSchedules = [
+  { id: 'sch-1', day: 'Senin', borrowClass: 'Kelas IX', returnClass: '-', notes: 'Layanan peminjaman terjadwal' },
+  { id: 'sch-2', day: 'Selasa', borrowClass: 'Kelas VIII', returnClass: '-', notes: 'Layanan peminjaman terjadwal' },
+  { id: 'sch-3', day: 'Rabu', borrowClass: 'Kelas VII', returnClass: 'Kelas IX', notes: 'Peminjaman Kelas VII & Pengembalian Kelas IX' },
+  { id: 'sch-4', day: 'Kamis', borrowClass: '-', returnClass: 'Kelas VIII', notes: 'Layanan pengembalian terjadwal' },
+  { id: 'sch-5', day: 'Jumat', borrowClass: '-', returnClass: 'Kelas VII', notes: 'Layanan pengembalian terjadwal' },
+];
+
+export const defaultMultimediaInfo = {
+  name: 'Ruang Multimedia',
+  schedule: 'Senin–Kamis: 07.30–14.30 WIB, Jumat: 07.30–10.55 WIB',
+  facilities: ['Perangkat Komputer', 'Koneksi Internet Edukasi', 'Akses Koleksi E-Book'],
+  durationLimit: 'Maksimal 1 jam per murid (dapat diperpanjang jika perangkat tersedia)',
+  rules: 'Digunakan semua mata pelajaran sesuai jadwal masing-masing.'
+};
+
 export const libraryProfileData: LibraryProfile = {
   name: 'Perpustakaan Titian Ilmu',
   shortName: 'Titian Ilmu',
@@ -19,19 +35,20 @@ export const libraryProfileData: LibraryProfile = {
     'Perpustakaan "Titian Ilmu" SMP Negeri 1 Tambak merupakan pusat sumber belajar, sarana literasi informasi, dan wahana rekreasi edukatif bagi seluruh warga sekolah. Berkomitmen mewujudkan generasi pembelajar yang cerdas, berkarakter luhur, dan berwawasan luas melalui penyediaan koleksi pustaka berkualitas serta pelayanan prima berorientasi pemustaka.',
   history:
     'Didirikan seiring dengan berdirinya SMP Negeri 1 Tambak untuk mendukung kegiatan belajar mengajar. Nama "Titian Ilmu" dipilih sebagai simbol jembatan yang kokoh bagi para peserta didik dalam melangkah meraih cita-cita dan wawasan semesta. Dari sebuah ruang baca sederhana, Perpustakaan Titian Ilmu bertransformasi menjadi ruang belajar kolaboratif modern yang nyaman, ramah anak, dan mengintegrasikan otomasi perpustakaan guna mempermudah akses informasi di era digital.',
-  vision:
-    'Terwujudnya perpustakaan sekolah yang unggul, inspiratif, dan berdaya guna dalam membentuk insan berkarakter, literat, dan berbudaya baca tinggi.',
+  vision: 'Terwujudnya Budaya Baca di Sekolah',
   missions: [
-    'Menyediakan dan mengembangkan koleksi bahan pustaka yang relevan dengan kurikulum dan pengembangan potensi peserta didik.',
-    'Memberikan pelayanan sirkulasi dan referensi yang ramah, cepat, tepat, dan menyenangkan.',
-    'Menciptakan ruang baca yang asri, tenang, bersih, dan berwawasan lingkungan agar pemustaka betah berkunjung.',
-    'Menyelenggarakan program-program literasi kreatif seperti Gerakan Literasi Sekolah (GLS), pemilihan Duta Baca, dan bedah buku berkala.',
-    'Memanfaatkan teknologi informasi dalam sistem katalogisasi dan otomasi perpustakaan demi efisiensi layanan.'
+    'Menumbuhkan kebiasaan membaca di kalangan siswa.',
+    'Menumbuhkan minat baca dan belajar di kalangan siswa.',
+    'Menumbuhkan pribadi yang cerdas, berbudaya, terampil, dan mandiri.',
+    'Mewujudkan pengelolaan dan pemanfaatan perpustakaan secara optimal.',
+    'Meningkatkan peran perpustakaan menjadi tempat belajar bagi siswa untuk meningkatkan kecerdasan.'
   ],
   goals: [
-    'Meningkatkan angka kunjungan dan minat baca warga sekolah sebesar minimal 25% setiap tahun ajaran.',
-    'Memperkaya ragam koleksi fiksi bermutu dan non-fiksi ilmiah populer yang terbarukan.',
-    'Mengintegrasikan kegiatan literasi perpustakaan dengan pembelajaran berbasis proyek di kelas.'
+    'Menyediakan sumber belajar yang lengkap, relevan, dan mutakhir.',
+    'Mendorong kebiasaan membaca dan budaya literasi.',
+    'Memberikan layanan berbasis digital agar akses informasi lebih cepat dan mudah.',
+    'Membantu murid dan guru dalam belajar, penelitian, dan pengembangan diri.',
+    'Menciptakan suasana belajar yang kondusif, tertib, dan menyenangkan.'
   ],
   stats: {
     totalBooks: 8450,
@@ -42,37 +59,39 @@ export const libraryProfileData: LibraryProfile = {
   logoUrl: '',
   homeStats: defaultHomeStatsData,
   heroVisualDescription: 'Menyediakan ragam bahan pustaka terkurasi, ruang baca berpenyejuk udara, otomasi katalog pencarian judul, serta selasar hijau ramah anak.',
-  colorTheme: DEFAULT_THEME
+  colorTheme: DEFAULT_THEME,
+  classSchedules: defaultClassSchedules,
+  multimediaInfo: defaultMultimediaInfo
 };
 
 export const operatingHoursData: OperatingHours[] = [
   {
     dayRange: 'Senin – Kamis',
-    hours: '07.00 – 14.30 WIB',
-    breakTime: 'Istirahat: 11.45 – 12.30 WIB',
+    hours: '07.30 – 14.30 WIB',
+    breakTime: '-',
     isOpen: true,
-    notes: 'Layanan sirkulasi dan ruang baca terbuka penuh'
+    notes: 'Layanan sirkulasi dan ruang baca'
   },
   {
     dayRange: 'Jumat',
-    hours: '07.00 – 11.15 WIB',
-    breakTime: 'Sholat Jumat & Bersih Lingkungan',
+    hours: '07.30 – 10.55 WIB',
+    breakTime: '-',
     isOpen: true,
-    notes: 'Layanan peminjaman dan pengembalian pagi'
+    notes: 'Layanan sirkulasi dan baca pagi'
   },
   {
-    dayRange: 'Sabtu',
+    dayRange: 'Sabtu, Minggu & Libur Sekolah',
     hours: 'Tutup',
     breakTime: '-',
     isOpen: false,
     notes: 'Pelayanan tatap muka tutup'
   },
   {
-    dayRange: 'Minggu & Hari Libur Nasional',
-    hours: 'Tutup',
-    breakTime: '-',
-    isOpen: false,
-    notes: 'Pelayanan tatap muka libur'
+    dayRange: 'Ruang Multimedia',
+    hours: 'Senin–Kamis 07.30–14.30, Jumat 07.30–10.55',
+    breakTime: 'Maks. 1 jam per murid (dapat diperpanjang jika tersedia)',
+    isOpen: true,
+    notes: 'Komputer, internet, akses e-book. Digunakan semua mapel sesuai jadwal.'
   }
 ];
 
@@ -157,322 +176,283 @@ export const newsData: NewsItem[] = [
 
 export const sopData: SOPEntry[] = [
   {
-    id: 'sop-peminjaman',
-    title: 'SOP Peminjaman Buku Sirkulasi',
-    category: 'Layanan Sirkulasi',
+    id: 'sop-1-tata-tertib',
+    title: '1. Tata Tertib Pengunjung',
+    category: 'Ketertiban & Kunjungan',
     description:
-      'Prosedur standar bagi anggota perpustakaan untuk meminjam koleksi buku umum maupun fiksi yang diizinkan dibawa pulang.',
-    targetAudience: 'Siswa, Guru, dan Karyawan SMPN 1 Tambak',
-    processingTime: '± 2–3 menit per transaksi',
+      'Tata tertib dan norma kepatutan yang wajib dipatuhi oleh seluruh pemustaka demi menjaga kenyamanan, ketertiban, dan kebersihan ruang perpustakaan.',
+    targetAudience: 'Seluruh Siswa, Guru, dan Warga Sekolah',
+    processingTime: 'Berlaku selama berada di perpustakaan',
     requirements: [
-      'Memiliki Kartu Anggota Perpustakaan yang masih aktif (berbarcode).',
-      'Tidak memiliki tanggungan keterlambatan atau denda buku sebelumnya.',
-      'Maksimal peminjaman 2 (dua) eksemplar buku untuk siswa, dan 4 (empat) untuk guru.',
-      'Jangka waktu pinjam adalah 7 (tujuh) hari kalender.'
+      'Mengisi daftar hadir sebelum masuk',
+      'Masuk dengan tenang, tidak berlari, dan bersikap sopan',
+      'Tas, jaket, dan barang bawaan diletakkan di tempat yang disediakan',
+      'Dilarang membawa makanan, minuman, dan benda yang dapat merusak buku',
+      'Menjaga kebersihan dan ketertiban lingkungan ruang baca',
+      'Tidak tidur dan tidak bermain di perpustakaan',
+      'Tidak mengganggu pengunjung lain',
+      'Mengembalikan buku ke tempat semula setelah dibaca',
+      'Tidak merusak, mencoret, atau melipat buku'
     ],
     steps: [
       {
         stepNumber: 1,
-        title: 'Penelusuran & Pemilihan Buku',
-        description:
-          'Pemustaka mencari buku di rak koleksi atau memanfaatkan komputer katalog (OPAC). Pastikan buku dalam kondisi baik.',
-        duration: '5 - 10 menit'
-      },
-      {
-        stepNumber: 2,
-        title: 'Penyerahan ke Meja Sirkulasi',
-        description:
-          'Membawa buku yang dipilih beserta Kartu Anggota Perpustakaan ke meja petugas sirkulasi.',
-        duration: '1 menit'
-      },
-      {
-        stepNumber: 3,
-        title: 'Pemindaian Barcode & Pencatatan Sistem',
-        description:
-          'Petugas memindai nomor anggota dan barcode buku ke dalam sistem otomasi perpustakaan, lalu mencatat tanggal batas kembali.',
-        duration: '1 menit'
-      },
-      {
-        stepNumber: 4,
-        title: 'Pemberian Cap Tanggal Kembali (Slip Bukti)',
-        description:
-          'Petugas membubuhkan cap tanggal jatuh tempo pada slip pengembalian di bagian belakang buku.',
-        duration: '30 detik'
-      },
-      {
-        stepNumber: 5,
-        title: 'Penerimaan Buku oleh Pemustaka',
-        description:
-          'Buku dan kartu anggota diserahkan kembali kepada peminjam. Peminjam berkewajiban merawat buku dengan baik.',
-        duration: 'Selesai'
-      }
-    ],
-    notes:
-      'Koleksi referensi bertanda label merah (seperti kamus tebal, ensiklopedia induk, dan buku induk arsip) hanya dapat dibaca di tempat.'
-  },
-  {
-    id: 'sop-pengembalian',
-    title: 'SOP Pengembalian & Perpanjangan Buku',
-    category: 'Layanan Sirkulasi',
-    description:
-      'Prosedur pengembalian buku yang telah dipinjam tepat waktu, verifikasi keutuhan fisik buku, serta perpanjangan masa pinjam.',
-    targetAudience: 'Seluruh Peminjam Aktif',
-    processingTime: '± 1–2 menit',
-    requirements: [
-      'Membawa buku yang hendak dikembalikan dalam keadaan utuh, bersih, dan tidak robek.',
-      'Membawa Kartu Anggota Perpustakaan.',
-      'Perpanjangan dapat dilakukan 1 (satu) kali berturut-turut selama buku tidak sedang dipesan oleh pemustaka lain.'
-    ],
-    steps: [
-      {
-        stepNumber: 1,
-        title: 'Penyerahan Buku ke Petugas',
-        description:
-          'Pemustaka menyerahkan buku yang dipinjam beserta kartu anggota kepada petugas di meja sirkulasi sebelum tanggal jatuh tempo.',
+        title: 'Presensi Pengunjung',
+        description: 'Mengisi daftar hadir sebelum masuk perpustakaan.',
         duration: '1 menit'
       },
       {
         stepNumber: 2,
-        title: 'Pemeriksaan Fisik Bahan Pustaka',
-        description:
-          'Petugas memeriksa kondisi fisik buku (halaman, sampul, barcode) untuk memastikan tidak terjadi kerusakan atau coretan.',
+        title: 'Penitipan Barang Bawaan',
+        description: 'Tas, jaket, dan barang bawaan diletakkan di tempat yang telah disediakan secara tertib.',
         duration: '1 menit'
       },
       {
         stepNumber: 3,
-        title: 'Pembaruan Data Transaksi di Sistem',
-        description:
-          'Petugas memindai barcode buku untuk menutup status pinjaman di sistem otomasi perpustakaan.',
-        duration: '30 detik'
-      },
-      {
-        stepNumber: 4,
-        title: 'Opsi Perpanjangan (Jika Diperlukan)',
-        description:
-          'Bila pemustaka ingin memperpanjang, petugas memperbarui tanggal jatuh tempo baru (maksimal perpanjangan 7 hari tambahan).',
-        duration: '1 menit'
-      },
-      {
-        stepNumber: 5,
-        title: 'Pengembalian Buku ke Rak Transit',
-        description:
-          'Petugas meletakkan buku yang selesai diperiksa di troli/rak transit untuk selanjutnya disortir kembali ke rak asalnya.',
-        duration: 'Selesai'
-      }
-    ],
-    notes:
-      'Keterlambatan pengembalian dikenakan sanksi edukatif (meresensi 1 buku cerita atau merapikan rak baca) untuk menanamkan kedisiplinan.'
-  },
-  {
-    id: 'sop-keanggotaan',
-    title: 'SOP Pembuatan & Aktivasi Kartu Anggota',
-    category: 'Layanan Keanggotaan',
-    description:
-      'Tata cara pendaftaran peserta didik baru, guru, dan tenaga kependidikan sebagai anggota sah Perpustakaan Titian Ilmu.',
-    targetAudience: 'Peserta Didik Kelas VII & PTK Baru',
-    processingTime: 'Kolektif saat Masa Pengenalan Lingkungan Sekolah (MPLS) atau 1 hari kerja',
-    requirements: [
-      'Terdaftar aktif sebagai siswa atau PTK di SMP Negeri 1 Tambak.',
-      'Mengisi formulir biodata anggota (atau import data Dapodik sekolah).',
-      'Menyerahkan pasfoto ukuran 2x3 atau foto langsung di stan perpustakaan.'
-    ],
-    steps: [
-      {
-        stepNumber: 1,
-        title: 'Pengisian Formulir Pendaftaran',
-        description:
-          'Calon anggota mengisi formulir digital/cetak yang berisi nama lengkap, NIS/NISN, kelas, dan kontak yang dapat dihubungi.',
-        duration: '5 menit'
-      },
-      {
-        stepNumber: 2,
-        title: 'Verifikasi Data Siswa',
-        description:
-          'Petugas mencocokkan data formulir dengan database siswa resmi SMPN 1 Tambak.',
-        duration: '2 menit'
-      },
-      {
-        stepNumber: 3,
-        title: 'Pencetakan Kartu Berbarcode',
-        description:
-          'Petugas mencetak kartu anggota berisikan identitas dan barcode unik sistem otomasi.',
-        duration: '3 menit'
-      },
-      {
-        stepNumber: 4,
-        title: 'Orientasi Singkat Layanan',
-        description:
-          'Petugas memberikan penjelasan singkat mengenai tata letak buku, aturan pinjam, dan fasilitas yang dapat diakses.',
-        duration: '5 menit'
-      }
-    ]
-  },
-  {
-    id: 'sop-tata-tertib',
-    title: 'SOP Tata Tertib & Kunjungan Ruang Baca',
-    category: 'Ketertiban & Fasilitas',
-    description:
-      'Peraturan umum yang wajib dipatuhi pemustaka demi menjaga kenyamanan, ketenangan, dan kelestarian koleksi di ruang baca.',
-    targetAudience: 'Seluruh Pengunjung Perpustakaan',
-    processingTime: 'Berlaku selama berada di area perpustakaan',
-    requirements: [
-      'Berpakaian seragam sekolah rapi dan sopan sesuai jadwal hari tersebut.',
-      'Menjaga sikap saling menghormati dan tidak membuat kegaduhan.'
-    ],
-    steps: [
-      {
-        stepNumber: 1,
-        title: 'Menitipkan Tas dan Jaket di Loker',
-        description:
-          'Pengunjung meletakkan tas, ransel, jaket, makanan, dan minuman manis di lemari loker yang telah disediakan di depan pintu masuk.',
-        duration: 'Saat masuk'
-      },
-      {
-        stepNumber: 2,
-        title: 'Mengisi Buku Pengunjung Elektronik',
-        description:
-          'Memindai kartu barcode anggota pada scanner presensi di meja selamat datang atau menulis di buku tamu fisik.',
-        duration: '15 detik'
-      },
-      {
-        stepNumber: 3,
-        title: 'Menjaga Ketenangan (Silent Zone)',
-        description:
-          'Berbicara dengan suara perlahan, menyetel nada dering ponsel pada mode hening (silent), dan tidak berlari-lari di dalam ruangan.',
+        title: 'Masuk dengan Tenang & Sopan',
+        description: 'Masuk dengan tenang, tidak berlari, dan menjaga sikap sopan di dalam ruang baca.',
         duration: 'Selama berkunjung'
       },
       {
         stepNumber: 4,
-        title: 'Penanganan Buku Setelah Dibaca',
-        description:
-          'Buku yang selesai dibaca TIDAK perlu dikembalikan ke rak sembarangan; letakkan di atas meja khusus atau rak pengembalian agar tidak salah susun.',
+        title: 'Menjaga Ketertiban & Fasilitas',
+        description: 'Dilarang membawa makanan/minuman, tidak tidur/bermain, tidak mengganggu pengunjung lain, dan tidak merusak atau mencoret buku.',
+        duration: 'Selama berkunjung'
+      },
+      {
+        stepNumber: 5,
+        title: 'Merapikan Koleksi',
+        description: 'Mengembalikan buku ke tempat semula setelah selesai dibaca.',
         duration: 'Saat selesai'
       }
     ],
-    notes:
-      'Dilarang merusak, melipat, menggunting lembaran buku, atau mencoret-coret perabotan perpustakaan.'
+    notes: 'Kepatuhan terhadap tata tertib menjamin kenyamanan belajar bersama.',
+    orderIndex: 0
   },
   {
-    id: 'sop-bebas-pustaka',
-    title: 'SOP Penerbitan Surat Keterangan Bebas Pustaka',
-    category: 'Layanan Administrasi',
+    id: 'sop-2-ketentuan-peminjaman',
+    title: '2. Ketentuan Peminjaman',
+    category: 'Layanan Sirkulasi',
     description:
-      'Prosedur penerbitan surat bukti bahwa siswa kelas IX tidak lagi memiliki pinjaman buku sebagai syarat kelulusan dan pengambilan ijazah.',
-    targetAudience: 'Siswa Kelas IX Menjelang Kelulusan / Siswa Mutasi Pindah',
-    processingTime: '5 – 10 menit',
+      'Syarat, batas kuota, dan masa peminjaman bahan pustaka bagi seluruh anggota perpustakaan yang sah.',
+    targetAudience: 'Siswa dan Anggota Terdaftar Perpustakaan',
+    processingTime: 'Masa pinjam 7 hari kalender',
     requirements: [
-      'Menunjukkan Kartu Tanda Siswa/Anggota Perpustakaan.',
-      'Telah mengembalikan seluruh buku paket pelajaran dan buku sirkulasi yang pernah dipinjam.',
-      'Sumbangan 1 buku bacaan layak baca (sukarela sesuai program wakaf buku alumni).'
+      'Wajib terdaftar sebagai anggota dengan kartu anggota (sekaligus kartu peminjaman)',
+      'Maksimal 3 buku selama 7 hari',
+      'Perpanjangan maksimal 1 kali',
+      'Buku referensi (kamus, ensiklopedia, atlas, dll.) hanya dibaca di tempat',
+      'Buku rusak atau hilang wajib diganti dengan buku sejenis atau sesuai harga'
     ],
     steps: [
       {
         stepNumber: 1,
-        title: 'Pengecekan Riwayat Peminjaman',
-        description:
-          'Petugas memeriksa catatan historis transaksi peminjaman siswa di pangkalan data perpustakaan.',
-        duration: '2 menit'
+        title: 'Pemeriksaan Kartu Anggota',
+        description: 'Wajib terdaftar sebagai anggota dengan kartu anggota (sekaligus kartu peminjaman).',
+        duration: '1 menit'
       },
       {
         stepNumber: 2,
-        title: 'Pengembalian Koleksi Terakhir',
-        description:
-          'Bila masih ada buku paket yang tertinggal, siswa wajib mengembalikannya sebelum surat diproses.',
-        duration: 'Sesuai kondisi'
+        title: 'Batas Kuota Pinjam',
+        description: 'Maksimal peminjaman 3 (tiga) buku selama 7 (tujuh) hari.',
+        duration: '7 hari masa pinjam'
       },
       {
         stepNumber: 3,
-        title: 'Penerbitan & Penandatanganan Surat',
-        description:
-          'Kepala Perpustakaan menandatangani Surat Keterangan Bebas Pustaka resmi berstempel basah.',
-        duration: '3 menit'
+        title: 'Hak Perpanjangan',
+        description: 'Perpanjangan maksimal 1 kali sebelum masa pinjam jatuh tempo.',
+        duration: '1 kali perpanjangan'
+      },
+      {
+        stepNumber: 4,
+        title: 'Aturan Khusus Koleksi Referensi',
+        description: 'Buku referensi (kamus, ensiklopedia, atlas, dll.) hanya dibaca di tempat.',
+        duration: 'Baca di tempat'
+      },
+      {
+        stepNumber: 5,
+        title: 'Kewajiban Penggantian',
+        description: 'Buku rusak atau hilang wajib diganti dengan buku sejenis atau sesuai harga buku.',
+        duration: 'Sesuai ketentuan'
       }
-    ]
+    ],
+    notes: 'Rawat dan jaga buku pinjaman dengan baik agar tetap bermanfaat bagi pemustaka lain.',
+    orderIndex: 1
+  },
+  {
+    id: 'sop-3-tata-cara-peminjaman',
+    title: '3. Tata Cara Peminjaman',
+    category: 'Layanan Sirkulasi & Otomasi',
+    description:
+      'Alur lengkap peminjaman buku melalui aplikasi katalog online OPAC Inlislite maupun pelayanan langsung di meja sirkulasi.',
+    targetAudience: 'Seluruh Pemustaka Terdaftar',
+    processingTime: '± 2–3 menit per transaksi',
+    requirements: [
+      'Terdaftar sebagai anggota dan telah memiliki ID anggota (kartu/barcode) dari petugas',
+      'Akun login Inlislite (ID anggota dan kata sandi) atau hadir di meja sirkulasi'
+    ],
+    steps: [
+      {
+        stepNumber: 1,
+        title: 'Pendaftaran & Registrasi ID Anggota',
+        description: 'Terdaftar sebagai anggota dan mendapat ID anggota (kartu/barcode) dari petugas perpustakaan.',
+        duration: '1 kali di awal'
+      },
+      {
+        stepNumber: 2,
+        title: 'Login & Pencarian Katalog OPAC Inlislite',
+        description: 'Login ke aplikasi Inlislite dengan ID anggota dan password untuk mencari buku lewat OPAC (judul, pengarang, subjek/kata kunci, nomor klasifikasi/rak).',
+        duration: '2 - 3 menit'
+      },
+      {
+        stepNumber: 3,
+        title: 'Cek Ketersediaan & Reservasi Mandiri',
+        description: 'Cek ketersediaan buku pada sistem. Klik "Booking/Reservasi" jika buku berstatus tersedia.',
+        duration: '1 menit'
+      },
+      {
+        stepNumber: 4,
+        title: 'Pemindaian di Meja Sirkulasi',
+        description: 'Atau datang langsung ke meja sirkulasi membawa kartu anggota, petugas memindai barcode buku dan ID anggota.',
+        duration: '1 menit'
+      },
+      {
+        stepNumber: 5,
+        title: 'Pencatatan Otomatis & Opsi Perpanjangan',
+        description: 'Sistem mencatat peminjaman secara otomatis. Perpanjangan 1 kali dapat dilakukan lewat aplikasi atau petugas sebelum jatuh tempo.',
+        duration: 'Selesai'
+      }
+    ],
+    notes: 'Katalog online (OPAC Inlislite) dapat diakses melalui link resmi perpustakaan untuk penelusuran mandiri.',
+    orderIndex: 2
+  },
+  {
+    id: 'sop-4-tata-cara-pengembalian',
+    title: '4. Tata Cara Pengembalian',
+    category: 'Layanan Sirkulasi',
+    description:
+      'Prosedur pengembalian buku pinjaman di meja sirkulasi, verifikasi status di sistem Inlislite, dan tindak lanjut pengembalian.',
+    targetAudience: 'Peminjam Buku Aktif',
+    processingTime: '± 1–2 menit',
+    requirements: [
+      'Pastikan buku dalam kondisi baik, bersih, dan tidak rusak',
+      'Membawa kartu anggota perpustakaan'
+    ],
+    steps: [
+      {
+        stepNumber: 1,
+        title: 'Pengecekan Fisik Buku',
+        description: 'Pastikan buku dalam kondisi baik, tidak dicoret, tidak sobek, dan barcode utuh.',
+        duration: '1 menit'
+      },
+      {
+        stepNumber: 2,
+        title: 'Penyerahan ke Meja Sirkulasi',
+        description: 'Bawa buku yang hendak dikembalikan ke meja sirkulasi bersama dengan kartu anggota.',
+        duration: '1 menit'
+      },
+      {
+        stepNumber: 3,
+        title: 'Pemindaian Barcode & Pembaruan Sistem',
+        description: 'Petugas memindai barcode buku dan ID anggota; sistem otomatis mencatat status "dikembalikan".',
+        duration: '30 detik'
+      },
+      {
+        stepNumber: 4,
+        title: 'Pencatatan Sanksi & Cek Riwayat di Aplikasi',
+        description: 'Jika terlambat, sistem mencatat sanksi secara otomatis. Status riwayat peminjaman buku dapat dilihat langsung di aplikasi.',
+        duration: 'Selesai'
+      }
+    ],
+    notes: 'Kembalikan buku sebelum tanggal jatuh tempo agar riwayat keanggotaan Anda tetap bersih.',
+    orderIndex: 3
+  },
+  {
+    id: 'sop-5-pelanggaran-sanksi',
+    title: '5. Pelanggaran dan Sanksi',
+    category: 'Ketertiban & Kedisiplinan',
+    description:
+      'Tabel ketentuan sanksi atas pelanggaran tata tertib, peminjaman, dan fasilitas di lingkungan Perpustakaan Titian Ilmu.',
+    targetAudience: 'Seluruh Siswa dan Pemustaka',
+    processingTime: 'Penetapan sanksi saat pelanggaran terjadi',
+    requirements: [
+      'Berlaku mutlak untuk seluruh pemustaka di SMP Negeri 1 Tambak guna menumbuhkan tanggung jawab dan disiplin'
+    ],
+    steps: [
+      {
+        stepNumber: 1,
+        title: 'Pencatatan Pelanggaran',
+        description: 'Petugas mencatat jenis pelanggaran ke dalam buku ketertiban atau sistem otomasi perpustakaan.',
+        duration: 'Saat kejadian'
+      },
+      {
+        stepNumber: 2,
+        title: 'Pemberlakuan Sanksi Resmi',
+        description: 'Pelanggar menerima konsekuensi sanksi sesuai ketentuan pada tabel pelanggaran dan sanksi resmi.',
+        duration: 'Sesuai jenis sanksi'
+      }
+    ],
+    sanctions: [
+      {
+        violation: 'Terlambat mengembalikan buku',
+        sanction: 'Teguran dan membuat pernyataan tidak mengulangi'
+      },
+      {
+        violation: 'Merusak, mencoret-coret, atau menghilangkan buku',
+        sanction: 'Wajib mengganti dengan buku sejenis'
+      },
+      {
+        violation: 'Melanggar tata tertib berulang kali',
+        sanction: 'Hak peminjaman ditangguhkan 1 minggu'
+      },
+      {
+        violation: 'Tindakan yang merugikan fasilitas perpustakaan',
+        sanction: 'Tidak boleh masuk perpustakaan untuk jangka waktu tertentu'
+      },
+      {
+        violation: 'Membawa makanan/minuman; tidur; mengganggu pengunjung lain; bermain di perpustakaan',
+        sanction: 'Teguran dan membuat pernyataan tidak mengulangi'
+      },
+      {
+        violation: 'Menyalin konten digital tanpa izin',
+        sanction: '1 minggu tidak boleh memakai sarana digital perpustakaan'
+      }
+    ],
+    notes: 'Sanksi bersifat edukatif dan disipliner untuk menjaga kelestarian koleksi dan kenyamanan bersama.',
+    orderIndex: 4
   }
 ];
 
 export const staffData: StaffMember[] = [
   {
     id: 'staff-1',
-    name: 'Drs. H. Sugiyanto, M.Pd.',
-    role: 'Penanggung Jawab / Kepala Sekolah',
+    name: 'Sad Diana Puji Hartono, S.Pd., M.Pd.',
+    role: 'Kepala Sekolah',
     positionCategory: 'Pimpinan',
-    nip: '-',
-    education: 'S2 Manajemen Pendidikan',
+    nip: '',
+    education: 'Magister Pendidikan (M.Pd.)',
     bio:
-      'Memberikan arahan kebijakan umum, alokasi anggaran, dan pembinaan strategis dalam peningkatan mutu perpustakaan sebagai jantung keunggulan akademik SMPN 1 Tambak.',
+      'Penanggung jawab utama kebijakan, sarana prasarana, dan pengembangan mutu Perpustakaan Titian Ilmu sebagai pusat keunggulan akademik SMP Negeri 1 Tambak.',
     tasks: [
       'Menetapkan kebijakan strategis pengembangan perpustakaan sekolah.',
       'Mengalokasikan anggaran sarana prasarana dan pengadaan koleksi pustaka.',
-      'Mendorong integrasi gerakan literasi dalam kultur harian sekolah.'
+      'Mendorong integrasi gerakan literasi sekolah dalam proses pembelajaran.'
     ],
     avatarUrl: ''
   },
   {
     id: 'staff-2',
-    name: 'Dra. Sri Wahyuni, M.Pd.',
+    name: 'Yuliarti Puji Astuti, S.Pd.',
     role: 'Kepala Perpustakaan',
-    positionCategory: 'Pimpinan',
-    nip: '-',
-    education: 'S2 Pendidikan Bahasa Indonesia & Sertifikasi Pengelola Perpustakaan',
+    positionCategory: 'Pengelola',
+    nip: '',
+    education: 'Sarjana Pendidikan (S.Pd.) & Sertifikasi Pengelola Perpustakaan',
     bio:
-      'Bertanggung jawab merencanakan program kerja tahunan, memimpin operasional pelayanan, menjalin kemitraan literasi, serta membimbing duta baca sekolah.',
+      'Memimpin dan mengkoordinasikan operasional pelayanan perpustakaan, pengolahan bahan pustaka, otomasi katalog Inlislite, serta pembinaan minat baca siswa.',
     tasks: [
-      'Menyusun rencana kerja dan anggaran tahunan perpustakaan.',
-      'Memimpin dan mengkoordinasikan kegiatan seluruh staf perpustakaan.',
-      'Menggagas inovasi program literasi dan pembinaan minat baca siswa.',
-      'Menjalin kerja sama dengan Dinas Kearsipan dan Perpustakaan Daerah Banyumas.'
-    ],
-    avatarUrl: ''
-  },
-  {
-    id: 'staff-3',
-    name: 'Siti Rohimah, S.Pd.',
-    role: 'Staf Pengolahan Bahan Pustaka',
-    positionCategory: 'Teknis',
-    nip: '-',
-    education: 'S1 Kependidikan & Diklat Klasifikasi DDC',
-    bio:
-      'Menangani alur teknis inventarisasi buku baru, pengatalogan, klasifikasi kode DDC, pelabelan punggung buku, hingga penataan susunan di rak koleksi.',
-    tasks: [
-      'Melakukan inventarisasi dan registrasi bahan pustaka masuk.',
-      'Mengklasifikasikan bahan pustaka berdasarkan sistem Dewey Decimal (DDC).',
-      'Membuat barcode, label call number, dan kantong buku.',
-      'Merawat dan melakukan perbaikan (preservasi) bahan pustaka yang rusak.'
-    ],
-    avatarUrl: ''
-  },
-  {
-    id: 'staff-4',
-    name: 'Bambang Triyono, S.Sos.',
-    role: 'Staf Pelayanan Pemustaka & Sirkulasi',
-    positionCategory: 'Layanan',
-    nip: '-',
-    education: 'S1 Ilmu Komunikasi',
-    bio:
-      'Melayani transaksi sirkulasi peminjaman dan pengembalian dengan ramah, memandu penelusuran bahan referensi, serta menjaga ketertiban ruang baca.',
-    tasks: [
-      'Melayani transaksi peminjaman dan pengembalian koleksi secara terkomputerisasi.',
-      'Membantu siswa menemukan buku referensi dan rujukan tugas.',
-      'Mengelola pendaftaran anggota baru dan pembuatan kartu perpustakaan.',
-      'Menyelenggarakan ketertiban, kebersihan, dan kenyamanan ruang baca.'
-    ],
-    avatarUrl: ''
-  },
-  {
-    id: 'staff-5',
-    name: 'Rian Pratama, S.Kom.',
-    role: 'Staf Teknologi Informasi & Otomasi',
-    positionCategory: 'Teknis',
-    nip: '-',
-    education: 'S1 Sistem Informasi',
-    bio:
-      'Mengelola sistem otomasi perpustakaan (katalog OPAC, database anggota, jaringan lokal perpustakaan), serta pemeliharaan komputer pemustaka.',
-    tasks: [
-      'Memelihara server database otomasi perpustakaan dan jaringan WiFi ruang baca.',
-      'Mengembangkan fitur katalog pencarian digital (OPAC).',
-      'Mengelola konten media informasi dan publikasi kegiatan perpustakaan.',
-      'Melakukan pencadangan (backup) data transaksi secara berkala.'
+      'Menyusun rencana kerja dan program tahunan perpustakaan.',
+      'Mengelola pelayanan sirkulasi, referensi, dan bimbingan pemustaka.',
+      'Mengkoordinasikan Gerakan Literasi Sekolah dan otomasi perpustakaan Inlislite.'
     ],
     avatarUrl: ''
   }

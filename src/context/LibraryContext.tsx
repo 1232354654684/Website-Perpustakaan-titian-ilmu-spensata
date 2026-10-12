@@ -140,6 +140,7 @@ interface LibraryContextType {
   updateStaff: (id: string, item: Partial<StaffMember>) => Promise<void>;
   deleteStaff: (id: string) => Promise<void>;
   seedInitialDataIfEmpty: () => Promise<void>;
+  resetToOfficialData: () => Promise<void>;
   addAdminEmail: (email: string) => Promise<void>;
   removeAdminEmail: (email: string) => Promise<void>;
 }
@@ -151,8 +152,8 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
   const [operatingHours, setOperatingHours] = useState<OperatingHours[]>(defaultHours);
   const [contactInfo, setContactInfo] = useState<ContactInfo>(defaultContact);
   const [newsList, setNewsList] = useState<NewsItem[]>([]);
-  const [sopList, setSopList] = useState<SOPEntry[]>([]);
-  const [staffList, setStaffList] = useState<StaffMember[]>([]);
+  const [sopList, setSopList] = useState<SOPEntry[]>(defaultSOP);
+  const [staffList, setStaffList] = useState<StaffMember[]>(defaultStaff);
 
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
@@ -256,15 +257,40 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
             const resolvedTheme =
               data.profile.colorTheme || data.colorTheme || defaultProfile.colorTheme || DEFAULT_THEME;
 
-            applyThemeToDOM(resolvedTheme);
+            const resolvedClassSchedules =
+              Array.isArray(data.profile.classSchedules) && data.profile.classSchedules.length > 0
+                ? data.profile.classSchedules
+                : defaultProfile.classSchedules || [];
+
+            const resolvedMultimedia =
+              data.profile.multimediaInfo || defaultProfile.multimediaInfo;
+
+            const resolvedMissions =
+              Array.isArray(data.profile.missions) && data.profile.missions.length > 0
+                ? data.profile.missions
+                : defaultProfile.missions || [];
+
+            const resolvedGoals =
+              Array.isArray(data.profile.goals) && data.profile.goals.length > 0
+                ? data.profile.goals
+                : defaultProfile.goals || [];
 
             setSettings({
+              ...defaultProfile,
               ...data.profile,
               homeStats: resolvedHomeStats,
               colorTheme: resolvedTheme,
+              classSchedules: resolvedClassSchedules,
+              multimediaInfo: resolvedMultimedia,
+              missions: resolvedMissions,
+              goals: resolvedGoals,
             });
           }
-          if (data.operatingHours) setOperatingHours(data.operatingHours);
+          if (data.operatingHours && data.operatingHours.length > 0) {
+            setOperatingHours(data.operatingHours);
+          } else {
+            setOperatingHours(defaultHours);
+          }
           if (data.contactInfo) setContactInfo(data.contactInfo);
         }
         settingsLoaded = true;
@@ -335,7 +361,7 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
         });
         // Sort if orderIndex exists
         list.sort((a: any, b: any) => (a.orderIndex || 0) - (b.orderIndex || 0));
-        setSopList(list);
+        setSopList(list.length > 0 ? list : defaultSOP);
         sopLoaded = true;
         checkAllLoaded();
       },
@@ -355,7 +381,7 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
           list.push({ id: d.id, ...d.data() } as StaffMember);
         });
         list.sort((a: any, b: any) => (a.orderIndex || 0) - (b.orderIndex || 0));
-        setStaffList(list);
+        setStaffList(list.length > 0 ? list : defaultStaff);
         staffLoaded = true;
         checkAllLoaded();
       },
@@ -647,6 +673,72 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     }
   };
 
+  /**
+   * Reset / Terapkan Data Resmi Sekolah (Visi, Misi, Tujuan, Jam Layanan, SOP & Organisasi)
+   */
+  const resetToOfficialData = async () => {
+    try {
+      // 1. Settings & Jam Layanan & Jadwal Kelas
+      await setDoc(
+        doc(db, 'settings', 'general'),
+        {
+          profile: defaultProfile,
+          homeStats: defaultProfile.homeStats || [],
+          colorTheme: defaultProfile.colorTheme || DEFAULT_THEME,
+          operatingHours: defaultHours,
+          contactInfo: defaultContact,
+          updatedAt: new Date().toISOString(),
+        },
+        { merge: true }
+      );
+
+      // 2. Bersihkan SOP lama yang tidak termasuk dalam 5 SOP resmi, lalu tulis 5 SOP resmi
+      const oldSopSnap = await getDocs(collection(db, 'sop'));
+      for (const d of oldSopSnap.docs) {
+        if (!defaultSOP.some((s) => s.id === d.id)) {
+          await deleteDoc(doc(db, 'sop', d.id));
+        }
+      }
+      for (let i = 0; i < defaultSOP.length; i++) {
+        const item = defaultSOP[i];
+        await setDoc(doc(db, 'sop', item.id), {
+          ...item,
+          orderIndex: i,
+        });
+      }
+
+      // 3. Bersihkan staf lama yang bukan 2 pengurus resmi, lalu simpan 2 pengurus resmi
+      const oldStaffSnap = await getDocs(collection(db, 'staff'));
+      for (const d of oldStaffSnap.docs) {
+        if (!defaultStaff.some((s) => s.id === d.id)) {
+          await deleteDoc(doc(db, 'staff', d.id));
+        }
+      }
+      for (let i = 0; i < defaultStaff.length; i++) {
+        const item = defaultStaff[i];
+        await setDoc(doc(db, 'staff', item.id), {
+          ...item,
+          orderIndex: i,
+        });
+      }
+
+      // 4. Admin email
+      await setDoc(doc(db, 'admin_emails', BOOTSTRAP_ADMIN_EMAIL.toLowerCase()), {
+        email: BOOTSTRAP_ADMIN_EMAIL.toLowerCase(),
+        addedAt: new Date().toISOString(),
+      });
+
+      // Update local states immediately
+      setSettings(defaultProfile);
+      setOperatingHours(defaultHours);
+      setSopList(defaultSOP);
+      setStaffList(defaultStaff);
+    } catch (err) {
+      console.error('Error resetting to official data:', err);
+      throw err;
+    }
+  };
+
   return (
     <LibraryContext.Provider
       value={{
@@ -673,6 +765,7 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
         updateStaff,
         deleteStaff,
         seedInitialDataIfEmpty,
+        resetToOfficialData,
         addAdminEmail,
         removeAdminEmail,
       }}

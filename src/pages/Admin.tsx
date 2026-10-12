@@ -27,15 +27,18 @@ import {
   ChevronDown,
   BarChart3,
   Palette,
+  Calendar,
+  Monitor,
 } from 'lucide-react';
 import { useLibrary, BOOTSTRAP_ADMIN_EMAIL } from '../context/LibraryContext';
 import { uploadAndProcessPhoto, validateImageFile, ImageUploadResult, blobToBase64 } from '../lib/firebase';
-import { NewsItem, SOPEntry, StaffMember, OperatingHours, ContactInfo, LibraryProfile, HomeStatItem } from '../types';
+import { NewsItem, SOPEntry, StaffMember, OperatingHours, ContactInfo, LibraryProfile, HomeStatItem, ClassScheduleItem } from '../types';
+import { defaultMultimediaInfo, defaultClassSchedules } from '../data/libraryData';
 import { THEME_PRESETS, ColorThemeConfig, DEFAULT_THEME, buildCustomTheme, applyThemeToDOM } from '../lib/theme';
 
 interface ConfirmDialogState {
   isOpen: boolean;
-  type: 'deleteNews' | 'deleteSOP' | 'deleteStaff' | 'removeAdmin' | 'seed';
+  type: 'deleteNews' | 'deleteSOP' | 'deleteStaff' | 'removeAdmin' | 'seed' | 'resetOfficial';
   id: string;
   title: string;
   message: string;
@@ -72,6 +75,7 @@ export const Admin: React.FC = () => {
     updateStaff,
     deleteStaff,
     seedInitialDataIfEmpty,
+    resetToOfficialData,
     addAdminEmail,
     removeAdminEmail,
   } = useLibrary();
@@ -445,6 +449,11 @@ export const Admin: React.FC = () => {
           await seedInitialDataIfEmpty();
           showToast('Data awal berhasil diinisialisasi ke Firestore!');
           break;
+        case 'resetOfficial':
+          console.log('[Admin] Mengisi dan menerapkan data resmi sekolah ke Firestore...');
+          await resetToOfficialData();
+          showToast('Data resmi sekolah (Profil, Visi, Misi, Tujuan, Jam Layanan, SOP & Struktur Organisasi) berhasil disimpan ke Firestore!');
+          break;
       }
       setConfirmDialog(null);
     } catch (err: any) {
@@ -808,6 +817,39 @@ export const Admin: React.FC = () => {
       {/* TAB 1: PENGATURAN UMUM */}
       {activeTab === 'settings' && (
         <form onSubmit={handleSaveSettings} className="space-y-8">
+          {/* Banner: Inisialisasi / Terapkan Data Resmi Sekolah */}
+          <div className="p-5 sm:p-6 rounded-3xl border border-emerald-200 bg-emerald-50/80 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-2xs">
+            <div className="space-y-1 max-w-2xl">
+              <div className="flex items-center gap-2">
+                <Database className="w-4 h-4 text-emerald-800" />
+                <h4 className="font-serif font-bold text-sm sm:text-base text-emerald-950">
+                  Data Resmi Perpustakaan Titian Ilmu SMP Negeri 1 Tambak
+                </h4>
+              </div>
+              <p className="text-xs text-emerald-800/90 font-sans leading-relaxed">
+                Terapkan seluruh data resmi sekolah (Visi, 5 butir Misi, 5 butir Tujuan, Jam Layanan 07.30–14.30 WIB & Ruang Multimedia, Jadwal Sirkulasi Per Kelas TA 2025/2026, 5 SOP resmi lengkap dengan tabel sanksi, dan 2 Kepala Sekolah & Pustaka resmi) langsung ke Firestore.
+              </p>
+            </div>
+            <button
+              type="button"
+              disabled={actionLoading}
+              onClick={() => {
+                setConfirmDialog({
+                  isOpen: true,
+                  type: 'resetOfficial',
+                  id: 'reset-official',
+                  title: 'Terapkan Data Resmi Sekolah?',
+                  message: 'Seluruh data Profil (Visi, Misi, Tujuan), Jam Layanan, Jadwal Kelas TA 2025/2026, 5 SOP Resmi, dan Struktur Organisasi akan diisi dengan data resmi SMP Negeri 1 Tambak dan disimpan ke database Firestore.',
+                  targetName: 'Data Resmi Titian Ilmu',
+                });
+              }}
+              className="px-4 py-2.5 rounded-xl bg-emerald-800 text-white text-xs font-semibold hover:bg-emerald-900 transition-colors shadow-2xs shrink-0 cursor-pointer inline-flex items-center gap-2"
+            >
+              <Database className="w-3.5 h-3.5" />
+              <span>Muat & Terapkan Data Resmi</span>
+            </button>
+          </div>
+
           {/* Section: Logo Perpustakaan */}
           <div className="bg-white rounded-3xl border border-[#E6DFD3] p-6 sm:p-8 space-y-5 shadow-xs">
             <div className="flex items-center justify-between border-b border-[#E6DFD3] pb-3">
@@ -1220,6 +1262,44 @@ export const Admin: React.FC = () => {
 
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-stone-700">Misi Lembaga</label>
+                <span className="text-[10px] text-stone-500">Tiap baris baru akan menjadi nomor butir misi</span>
+              </div>
+              <textarea
+                rows={5}
+                value={(profileForm.missions || []).join('\n')}
+                onChange={(e) =>
+                  setProfileForm({
+                    ...profileForm,
+                    missions: e.target.value.split('\n').filter((l) => l.trim().length > 0),
+                  })
+                }
+                placeholder="Menumbuhkan kebiasaan membaca di kalangan siswa.&#10;Menumbuhkan minat baca dan belajar di kalangan siswa."
+                className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] text-xs sm:text-sm text-stone-900 focus:ring-2 focus:ring-[#1B4332] focus:outline-none"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-semibold text-stone-700">Tujuan Perpustakaan</label>
+                <span className="text-[10px] text-stone-500">Tiap baris baru akan menjadi nomor butir tujuan</span>
+              </div>
+              <textarea
+                rows={5}
+                value={(profileForm.goals || []).join('\n')}
+                onChange={(e) =>
+                  setProfileForm({
+                    ...profileForm,
+                    goals: e.target.value.split('\n').filter((l) => l.trim().length > 0),
+                  })
+                }
+                placeholder="Menyediakan sumber belajar yang lengkap, relevan, dan mutakhir.&#10;Mendorong kebiasaan membaca dan budaya literasi."
+                className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] text-xs sm:text-sm text-stone-900 focus:ring-2 focus:ring-[#1B4332] focus:outline-none"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
                 <label className="text-xs font-semibold text-stone-700">
                   Deskripsi Kartu Hero Beranda ("Ruang Teduh")
                 </label>
@@ -1491,6 +1571,221 @@ export const Admin: React.FC = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+
+          {/* Section: Jadwal Peminjaman & Pengembalian per Kelas (TA 2025/2026) */}
+          <div className="bg-white rounded-3xl border border-[#E6DFD3] p-6 sm:p-8 space-y-4 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E6DFD3] pb-3">
+              <div>
+                <h3 className="font-serif text-xl font-bold text-stone-900 flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-[#1B4332]" />
+                  <span>Jadwal Peminjaman & Pengembalian per Kelas (TA 2025/2026)</span>
+                </h3>
+                <p className="text-xs text-stone-500 font-sans mt-0.5">
+                  Tabel ini mengatur pembagian giliran sirkulasi buku per jenjang kelas (tampil di halaman SOP & Beranda).
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const newId = `sch_${Date.now()}`;
+                  setProfileForm((prev) => ({
+                    ...prev,
+                    classSchedules: [
+                      ...(prev.classSchedules || defaultClassSchedules),
+                      { id: newId, day: 'Hari', borrowClass: '-', returnClass: '-', notes: '' },
+                    ],
+                  }));
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E6DFD3] bg-[#FAF8F5] hover:bg-[#F2ECE1] text-xs font-semibold text-stone-700 transition-colors cursor-pointer self-start sm:self-auto"
+              >
+                <Plus className="w-3.5 h-3.5 text-[#1B4332]" />
+                <span>Tambah Baris Jadwal</span>
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {(profileForm.classSchedules && profileForm.classSchedules.length > 0
+                ? profileForm.classSchedules
+                : defaultClassSchedules
+              ).map((sch, sIdx) => (
+                <div key={sch.id || sIdx} className="p-4 rounded-2xl border border-[#E6DFD3] bg-[#FAF8F5]">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                    <div>
+                      <label className="text-[11px] font-semibold text-stone-700 block">Hari</label>
+                      <input
+                        type="text"
+                        value={sch.day}
+                        onChange={(e) => {
+                          const list = [
+                            ...(profileForm.classSchedules && profileForm.classSchedules.length > 0
+                              ? profileForm.classSchedules
+                              : defaultClassSchedules),
+                          ];
+                          list[sIdx].day = e.target.value;
+                          setProfileForm({ ...profileForm, classSchedules: list });
+                        }}
+                        className="w-full mt-1 px-3 py-2 rounded-xl border border-[#E6DFD3] bg-white text-xs text-stone-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-semibold text-stone-700 block">Kelas Peminjaman</label>
+                      <input
+                        type="text"
+                        value={sch.borrowClass}
+                        onChange={(e) => {
+                          const list = [
+                            ...(profileForm.classSchedules && profileForm.classSchedules.length > 0
+                              ? profileForm.classSchedules
+                              : defaultClassSchedules),
+                          ];
+                          list[sIdx].borrowClass = e.target.value;
+                          setProfileForm({ ...profileForm, classSchedules: list });
+                        }}
+                        placeholder="Contoh: Kelas IX atau -"
+                        className="w-full mt-1 px-3 py-2 rounded-xl border border-[#E6DFD3] bg-white text-xs text-stone-900"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-semibold text-stone-700 block">Kelas Pengembalian</label>
+                      <input
+                        type="text"
+                        value={sch.returnClass}
+                        onChange={(e) => {
+                          const list = [
+                            ...(profileForm.classSchedules && profileForm.classSchedules.length > 0
+                              ? profileForm.classSchedules
+                              : defaultClassSchedules),
+                          ];
+                          list[sIdx].returnClass = e.target.value;
+                          setProfileForm({ ...profileForm, classSchedules: list });
+                        }}
+                        placeholder="Contoh: Kelas VIII atau -"
+                        className="w-full mt-1 px-3 py-2 rounded-xl border border-[#E6DFD3] bg-white text-xs text-stone-900"
+                      />
+                    </div>
+                    <div className="flex items-end gap-2">
+                      <div className="flex-1">
+                        <label className="text-[11px] font-semibold text-stone-700 block">Keterangan</label>
+                        <input
+                          type="text"
+                          value={sch.notes || ''}
+                          onChange={(e) => {
+                            const list = [
+                              ...(profileForm.classSchedules && profileForm.classSchedules.length > 0
+                                ? profileForm.classSchedules
+                                : defaultClassSchedules),
+                            ];
+                            list[sIdx].notes = e.target.value;
+                            setProfileForm({ ...profileForm, classSchedules: list });
+                          }}
+                          placeholder="Keterangan singkat"
+                          className="w-full mt-1 px-3 py-2 rounded-xl border border-[#E6DFD3] bg-white text-xs text-stone-900"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const currentList =
+                            profileForm.classSchedules && profileForm.classSchedules.length > 0
+                              ? profileForm.classSchedules
+                              : defaultClassSchedules;
+                          const list = currentList.filter((_, i) => i !== sIdx);
+                          setProfileForm({ ...profileForm, classSchedules: list });
+                        }}
+                        className="p-2 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer shrink-0"
+                        title="Hapus baris"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Section: Layanan Ruang Multimedia */}
+          <div className="bg-white rounded-3xl border border-[#E6DFD3] p-6 sm:p-8 space-y-4 shadow-xs">
+            <div className="border-b border-[#E6DFD3] pb-3">
+              <h3 className="font-serif text-xl font-bold text-stone-900 flex items-center gap-2">
+                <Monitor className="w-5 h-5 text-[#1B4332]" />
+                <span>Informasi Layanan Ruang Multimedia</span>
+              </h3>
+              <p className="text-xs text-stone-500 font-sans mt-0.5">
+                Pengaturan jadwal, fasilitas, dan ketentuan penggunaan perangkat komputer & e-book.
+              </p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-semibold text-stone-700 block">Nama Fasilitas</label>
+                <input
+                  type="text"
+                  value={profileForm.multimediaInfo?.name || defaultMultimediaInfo.name}
+                  onChange={(e) =>
+                    setProfileForm({
+                      ...profileForm,
+                      multimediaInfo: {
+                        ...(profileForm.multimediaInfo || defaultMultimediaInfo),
+                        name: e.target.value,
+                      },
+                    })
+                  }
+                  className="w-full mt-1 px-3 py-2 rounded-xl border border-[#E6DFD3] text-xs text-stone-900"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-stone-700 block">Jadwal Operasional</label>
+                <input
+                  type="text"
+                  value={profileForm.multimediaInfo?.schedule || defaultMultimediaInfo.schedule}
+                  onChange={(e) =>
+                    setProfileForm({
+                      ...profileForm,
+                      multimediaInfo: {
+                        ...(profileForm.multimediaInfo || defaultMultimediaInfo),
+                        schedule: e.target.value,
+                      },
+                    })
+                  }
+                  className="w-full mt-1 px-3 py-2 rounded-xl border border-[#E6DFD3] text-xs text-stone-900"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-stone-700 block">Batas Durasi Pemakaian</label>
+                <input
+                  type="text"
+                  value={profileForm.multimediaInfo?.durationLimit || defaultMultimediaInfo.durationLimit}
+                  onChange={(e) =>
+                    setProfileForm({
+                      ...profileForm,
+                      multimediaInfo: {
+                        ...(profileForm.multimediaInfo || defaultMultimediaInfo),
+                        durationLimit: e.target.value,
+                      },
+                    })
+                  }
+                  className="w-full mt-1 px-3 py-2 rounded-xl border border-[#E6DFD3] text-xs text-stone-900"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-stone-700 block">Ketentuan Pemakaian</label>
+                <input
+                  type="text"
+                  value={profileForm.multimediaInfo?.rules || defaultMultimediaInfo.rules}
+                  onChange={(e) =>
+                    setProfileForm({
+                      ...profileForm,
+                      multimediaInfo: {
+                        ...(profileForm.multimediaInfo || defaultMultimediaInfo),
+                        rules: e.target.value,
+                      },
+                    })
+                  }
+                  className="w-full mt-1 px-3 py-2 rounded-xl border border-[#E6DFD3] text-xs text-stone-900"
+                />
+              </div>
             </div>
           </div>
 
@@ -2331,6 +2626,94 @@ export const Admin: React.FC = () => {
                   onChange={(e) => setEditingSOP({ ...editingSOP, targetAudience: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] text-xs sm:text-sm text-stone-900"
                 />
+              </div>
+
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-stone-700">Persyaratan & Ketentuan Layanan</label>
+                  <span className="text-[10px] text-stone-500">Satu butir per baris</span>
+                </div>
+                <textarea
+                  rows={4}
+                  value={(editingSOP.requirements || []).join('\n')}
+                  onChange={(e) =>
+                    setEditingSOP({
+                      ...editingSOP,
+                      requirements: e.target.value.split('\n').filter((l) => l.trim().length > 0),
+                    })
+                  }
+                  placeholder="Mengisi daftar hadir sebelum masuk&#10;Masuk dengan tenang dan sopan"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] text-xs sm:text-sm text-stone-900"
+                />
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-stone-700">Catatan Khusus</label>
+                <input
+                  type="text"
+                  value={editingSOP.notes || ''}
+                  onChange={(e) => setEditingSOP({ ...editingSOP, notes: e.target.value })}
+                  placeholder="Catatan tambahan bagi pemustaka"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] text-xs sm:text-sm text-stone-900"
+                />
+              </div>
+
+              <div className="space-y-2 pt-2 border-t border-[#E6DFD3]">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-semibold text-stone-700">Tabel Pelanggaran & Sanksi (Opsional)</label>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditingSOP({
+                        ...editingSOP,
+                        sanctions: [
+                          ...(editingSOP.sanctions || []),
+                          { violation: 'Jenis Pelanggaran Baru', sanction: 'Teguran dan membuat pernyataan' },
+                        ],
+                      })
+                    }
+                    className="text-[11px] font-semibold text-[#1B4332] hover:underline inline-flex items-center gap-1 cursor-pointer"
+                  >
+                    <Plus className="w-3 h-3" />
+                    <span>Tambah Baris Sanksi</span>
+                  </button>
+                </div>
+                {(editingSOP.sanctions || []).map((s, sIdx) => (
+                  <div key={sIdx} className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      value={s.violation}
+                      onChange={(e) => {
+                        const list = [...(editingSOP.sanctions || [])];
+                        list[sIdx].violation = e.target.value;
+                        setEditingSOP({ ...editingSOP, sanctions: list });
+                      }}
+                      placeholder="Jenis Pelanggaran"
+                      className="flex-1 px-3 py-1.5 rounded-lg border border-[#E6DFD3] text-xs text-stone-900"
+                    />
+                    <input
+                      type="text"
+                      value={s.sanction}
+                      onChange={(e) => {
+                        const list = [...(editingSOP.sanctions || [])];
+                        list[sIdx].sanction = e.target.value;
+                        setEditingSOP({ ...editingSOP, sanctions: list });
+                      }}
+                      placeholder="Ketentuan Sanksi"
+                      className="flex-1 px-3 py-1.5 rounded-lg border border-[#E6DFD3] text-xs text-stone-900"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const list = (editingSOP.sanctions || []).filter((_, i) => i !== sIdx);
+                        setEditingSOP({ ...editingSOP, sanctions: list });
+                      }}
+                      className="p-1.5 text-rose-600 hover:bg-rose-50 rounded-lg cursor-pointer shrink-0"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-[#E6DFD3]">

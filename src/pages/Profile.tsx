@@ -184,6 +184,44 @@ export const Profile: React.FC = () => {
         </div>
       </section>
 
+      {/* Tujuan Perpustakaan */}
+      <section className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-8 sm:p-10 shadow-xs space-y-6">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-[var(--color-bg)] border border-[var(--color-border)] text-[var(--color-primary)] flex items-center justify-center">
+            <Target className="w-5 h-5 text-[var(--color-primary)]" />
+          </div>
+          <div>
+            <span className="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-widest">
+              Arah & Capaian
+            </span>
+            <h3 className="font-serif text-xl sm:text-2xl font-bold text-[var(--color-text)]">
+              Tujuan Perpustakaan
+            </h3>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-1">
+          {(settings.goals || []).map((goal, gIdx) => (
+            <div
+              key={gIdx}
+              className="p-4 rounded-xl bg-[var(--color-bg)] border border-[var(--color-border)] space-y-2 flex flex-col justify-between"
+            >
+              <div className="flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-[var(--color-primary-soft)] text-[var(--color-primary)] font-mono text-xs font-bold flex items-center justify-center shrink-0">
+                  {gIdx + 1}
+                </span>
+                <span className="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-wide">
+                  Tujuan #{gIdx + 1}
+                </span>
+              </div>
+              <p className="text-xs sm:text-sm text-[var(--color-text)] leading-relaxed font-sans">
+                {goal}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
       {/* Nilai Utama Perpustakaan */}
       <section className="space-y-8">
         <div className="max-w-3xl">

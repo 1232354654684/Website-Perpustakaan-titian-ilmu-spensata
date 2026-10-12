@@ -134,7 +134,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
                 Informasi Jam Layanan Pemustaka
               </h3>
               <p className="text-xs text-[var(--color-text-muted)]">
-                Buka setiap hari kerja (Senin–Jumat) untuk layanan sirkulasi dan baca. Sabtu & Minggu tutup.
+                {operatingHours.filter((h) => h.isOpen).map((h) => h.dayRange).join(', ') || 'Senin – Jumat'} · Sabtu, Minggu, dan libur sekolah tutup.
               </p>
             </div>
           </div>

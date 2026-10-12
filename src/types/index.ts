@@ -22,6 +22,24 @@ export interface LibraryProfile {
   homeStats?: HomeStatItem[];
   heroVisualDescription?: string;
   colorTheme?: ColorThemeConfig;
+  classSchedules?: ClassScheduleItem[];
+  multimediaInfo?: MultimediaInfo;
+}
+
+export interface ClassScheduleItem {
+  id: string;
+  day: string;
+  borrowClass: string;
+  returnClass: string;
+  notes?: string;
+}
+
+export interface MultimediaInfo {
+  name: string;
+  schedule: string;
+  facilities: string[];
+  durationLimit: string;
+  rules: string;
 }
 
 export interface HomeStatItem {
@@ -54,6 +72,11 @@ export interface SOPStep {
   duration?: string;
 }
 
+export interface SOPSanctionItem {
+  violation: string;
+  sanction: string;
+}
+
 export interface SOPEntry {
   id: string;
   title: string;
@@ -62,8 +85,10 @@ export interface SOPEntry {
   targetAudience: string;
   requirements: string[];
   steps: SOPStep[];
+  sanctions?: SOPSanctionItem[];
   notes?: string;
   processingTime: string;
+  orderIndex?: number;
 }
 
 export interface StaffMember {
