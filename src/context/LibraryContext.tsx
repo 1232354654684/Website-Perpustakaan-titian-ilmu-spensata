@@ -456,9 +456,7 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
         const adminDoc = await getDoc(doc(db, 'admin_emails', email));
         if (!adminDoc.exists()) {
           await signOut(auth);
-          throw new Error(
-            `Email ${email} tidak memiliki izin akses administrator Perpustakaan Titian Ilmu.`
-          );
+          throw new Error('Akun ini tidak memiliki akses admin.');
         }
       }
     } catch (err: any) {

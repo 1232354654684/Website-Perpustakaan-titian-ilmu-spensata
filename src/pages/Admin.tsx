@@ -329,7 +329,7 @@ export const Admin: React.FC = () => {
             </h2>
             <p className="text-xs sm:text-sm text-stone-600 leading-relaxed font-sans">
               Portal manajemen konten Perpustakaan Titian Ilmu SMP Negeri 1 Tambak.
-              Hanya email yang telah terdaftar sebagai administrator yang diizinkan masuk.
+              Hanya administrator yang memiliki izin yang dapat masuk ke portal ini.
             </p>
           </div>
 
@@ -348,7 +348,12 @@ export const Admin: React.FC = () => {
                   await loginWithGoogle();
                 } catch (err: any) {
                   console.error('Login error:', err);
-                  setAuthError(err.message || 'Gagal masuk akun. Pastikan koneksi stabil.');
+                  const msg = err?.message || '';
+                  if (msg.includes('tidak memiliki') || msg.includes('izin') || msg.includes('akses')) {
+                    setAuthError('Akun ini tidak memiliki akses admin.');
+                  } else {
+                    setAuthError(err.message || 'Gagal masuk akun. Pastikan koneksi stabil.');
+                  }
                 }
               }}
               className="w-full flex items-center justify-center gap-3 px-5 py-3 rounded-xl border border-stone-300 bg-white hover:bg-stone-50 text-stone-800 font-semibold text-sm transition-all shadow-2xs hover:shadow-xs cursor-pointer"
@@ -374,11 +379,6 @@ export const Admin: React.FC = () => {
               <span>Masuk dengan Akun Google</span>
             </button>
           </div>
-
-          <div className="pt-2 text-[11px] text-stone-500 border-t border-[#E6DFD3] space-y-1">
-            <p>Administrator Terdaftar:</p>
-            <p className="font-mono text-stone-700 font-medium">{BOOTSTRAP_ADMIN_EMAIL}</p>
-          </div>
         </div>
       </div>
     );
@@ -395,7 +395,7 @@ export const Admin: React.FC = () => {
             Akses Ditolak
           </h2>
           <p className="text-xs sm:text-sm text-stone-600 leading-relaxed font-sans">
-            Akun <strong>{user.email}</strong> berhasil login, tetapi belum terdaftar di dalam daftar administrator Perpustakaan Titian Ilmu.
+            Akun ini tidak memiliki akses admin. Silakan masuk menggunakan akun yang berwenang.
           </p>
           <div className="pt-2">
             <button
