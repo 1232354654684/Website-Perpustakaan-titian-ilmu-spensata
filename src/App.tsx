@@ -93,14 +93,29 @@ function MainApp() {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[var(--color-bg)] flex flex-col items-center justify-center p-6 text-[var(--color-text)] transition-colors duration-200">
+        <div className="flex flex-col items-center space-y-4 max-w-sm text-center">
+          <div className="w-14 h-14 rounded-2xl bg-[var(--color-primary)]/10 flex items-center justify-center text-[var(--color-primary)] shadow-xs">
+            <svg className="w-7 h-7 text-[var(--color-primary)] animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+            </svg>
+          </div>
+          <div className="space-y-1">
+            <h2 className="font-serif font-bold text-lg text-stone-900 tracking-tight">Perpustakaan Titian Ilmu</h2>
+            <p className="text-xs text-stone-500 font-sans">SMP Negeri 1 Tambak</p>
+          </div>
+          <div className="w-36 h-1 bg-stone-200/80 rounded-full overflow-hidden mt-2">
+            <div className="w-1/2 h-full bg-[var(--color-primary)] animate-[indeterminate_1.2s_infinite_linear] rounded-full" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[var(--color-bg)] text-[var(--color-text)] flex flex-col font-sans selection:bg-[var(--color-primary)] selection:text-white transition-colors duration-200">
-      {/* Subtle top indicator if fetching Firestore */}
-      {loading && (
-        <div className="fixed top-0 left-0 w-full h-1 bg-[var(--color-primary)]/20 z-50 overflow-hidden">
-          <div className="w-1/3 h-full bg-[var(--color-primary)] animate-[indeterminate_1.5s_infinite_linear]" />
-        </div>
-      )}
 
       {/* Top Navigation Bar */}
       <Navbar activePage={activePage} onNavigate={handleNavigate} />

@@ -23,13 +23,13 @@ import {
   sopData as defaultSOP,
   staffData as defaultStaff,
 } from '../data/libraryData';
-import { applyThemeToDOM, DEFAULT_THEME, resolveTheme } from '../lib/theme';
+import { applyThemeToDOM, DEFAULT_THEME, resolveTheme, loadCachedTheme, ColorThemeConfig } from '../lib/theme';
 
 export const BOOTSTRAP_ADMIN_EMAIL = 'roni.ardiansyah57@guru.smk.belajar.id';
 
-// Terapkan tema awal sesegera mungkin agar tidak ada flickering
+// Terapkan tema awal dari cache localStorage sebagai cadangan awal tanpa mereset ke hijau
 if (typeof document !== 'undefined') {
-  applyThemeToDOM(defaultProfile.colorTheme || DEFAULT_THEME);
+  applyThemeToDOM(loadCachedTheme());
 }
 
 /**
@@ -130,6 +130,7 @@ interface LibraryContextType {
   loginWithGoogle: () => Promise<void>;
   logout: () => Promise<void>;
   updateSettings: (profile: LibraryProfile, hours: OperatingHours[], contact: ContactInfo) => Promise<void>;
+  updateTheme: (theme: ColorThemeConfig) => Promise<void>;
   addNews: (item: Omit<NewsItem, 'id'>) => Promise<void>;
   updateNews: (id: string, item: Partial<NewsItem>) => Promise<void>;
   deleteNews: (id: string) => Promise<void>;
@@ -234,8 +235,13 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     let sopLoaded = false;
     let staffLoaded = false;
 
+    const safetyTimer = setTimeout(() => {
+      setLoading(false);
+    }, 1500);
+
     const checkAllLoaded = () => {
       if (settingsLoaded && newsLoaded && sopLoaded && staffLoaded) {
+        clearTimeout(safetyTimer);
         setLoading(false);
       }
     };
@@ -246,6 +252,13 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       (docSnap) => {
         if (docSnap.exists()) {
           const data = docSnap.data();
+          // Baca tema warna dari Firestore (field colorTheme atau profile.colorTheme)
+          const rawTheme = data.colorTheme || (data.profile && data.profile.colorTheme) || null;
+          const resolvedTheme = resolveTheme(rawTheme);
+
+          // Terapkan tema resmi dari Firestore langsung ke DOM & simpan cache di localStorage
+          applyThemeToDOM(resolvedTheme);
+
           if (data.profile) {
             const resolvedHomeStats =
               Array.isArray(data.profile.homeStats)
@@ -253,9 +266,6 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
                 : Array.isArray(data.homeStats)
                 ? data.homeStats
                 : defaultProfile.homeStats || [];
-
-            const resolvedTheme =
-              data.profile.colorTheme || data.colorTheme || defaultProfile.colorTheme || DEFAULT_THEME;
 
             const resolvedClassSchedules =
               Array.isArray(data.profile.classSchedules) && data.profile.classSchedules.length > 0
@@ -285,19 +295,29 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
               missions: resolvedMissions,
               goals: resolvedGoals,
             });
+          } else {
+            setSettings((prev) => ({
+              ...prev,
+              colorTheme: resolvedTheme,
+            }));
           }
+
           if (data.operatingHours && data.operatingHours.length > 0) {
             setOperatingHours(data.operatingHours);
           } else {
             setOperatingHours(defaultHours);
           }
           if (data.contactInfo) setContactInfo(data.contactInfo);
+        } else {
+          // Dokumen pengaturan umum belum ada di Firestore -> gunakan tema default hijau
+          applyThemeToDOM(DEFAULT_THEME);
         }
         settingsLoaded = true;
         checkAllLoaded();
       },
       (err) => {
         console.warn('Settings load fallback:', err);
+        applyThemeToDOM(loadCachedTheme());
         settingsLoaded = true;
         checkAllLoaded();
       }
@@ -442,6 +462,32 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     setIsAdmin(false);
   };
 
+  const updateTheme = async (theme: ColorThemeConfig) => {
+    const path = 'settings/general';
+    try {
+      const cleanTheme = resolveTheme(theme);
+      await setDoc(
+        doc(db, 'settings', 'general'),
+        {
+          colorTheme: cleanTheme,
+          profile: {
+            ...settings,
+            colorTheme: cleanTheme,
+          },
+          updatedAt: new Date().toISOString(),
+        },
+        { merge: true }
+      );
+      applyThemeToDOM(cleanTheme);
+      setSettings((prev) => ({
+        ...prev,
+        colorTheme: cleanTheme,
+      }));
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, path);
+    }
+  };
+
   const updateSettings = async (
     profile: LibraryProfile,
     hours: OperatingHours[],
@@ -449,20 +495,25 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
   ) => {
     const path = 'settings/general';
     try {
+      const cleanTheme = resolveTheme(profile.colorTheme);
+      const cleanProfile = {
+        ...profile,
+        colorTheme: cleanTheme,
+      };
       await setDoc(
         doc(db, 'settings', 'general'),
         {
-          profile,
+          profile: cleanProfile,
           homeStats: profile.homeStats || [],
-          colorTheme: profile.colorTheme || DEFAULT_THEME,
+          colorTheme: cleanTheme,
           operatingHours: hours,
           contactInfo: contact,
           updatedAt: new Date().toISOString(),
         },
         { merge: true }
       );
-      applyThemeToDOM(profile.colorTheme || DEFAULT_THEME);
-      setSettings(profile);
+      applyThemeToDOM(cleanTheme);
+      setSettings(cleanProfile);
       setOperatingHours(hours);
       setContactInfo(contact);
     } catch (err) {
@@ -755,6 +806,7 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
         loginWithGoogle,
         logout,
         updateSettings,
+        updateTheme,
         addNews,
         updateNews,
         deleteNews,

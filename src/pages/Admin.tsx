@@ -67,6 +67,7 @@ export const Admin: React.FC = () => {
     loginWithGoogle,
     logout,
     updateSettings,
+    updateTheme,
     addNews,
     updateNews,
     deleteNews,
@@ -143,16 +144,22 @@ export const Admin: React.FC = () => {
   const handleSaveThemeOnly = async () => {
     setActionLoading(true);
     try {
-      const updatedProfile: LibraryProfile = {
-        ...profileForm,
-        homeStats: homeStatsForm,
-        colorTheme: themeForm,
-      };
-      await updateSettings(updatedProfile, hoursForm, contactForm);
-      showToast('Pilihan tema warna website berhasil disimpan ke database!');
+      await updateTheme(themeForm);
+      showToast('Tema berhasil disimpan');
     } catch (err: any) {
       console.error('[handleSaveThemeOnly] Error:', err);
-      showToast('Gagal menyimpan tema warna: ' + (err.message || 'Terjadi kesalahan.'), 'error');
+      let errorMsg = err?.message || 'Terjadi kesalahan sistem.';
+      try {
+        const parsed = JSON.parse(err.message);
+        if (parsed.error && (parsed.error.includes('permission-denied') || parsed.error.includes('insufficient permissions'))) {
+          errorMsg = 'Izin ditolak (permission-denied). Hanya akun admin resmi yang dapat mengubah tema website.';
+        } else if (parsed.error) {
+          errorMsg = parsed.error;
+        }
+      } catch {
+        // Bukan error JSON
+      }
+      showToast(`Gagal menyimpan tema: ${errorMsg}`, 'error');
     } finally {
       setActionLoading(false);
     }
@@ -400,7 +407,6 @@ export const Admin: React.FC = () => {
     );
   }
 
-  // --- HANDLER SIMPAN PENGATURAN UMUM ---
   const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault();
     setActionLoading(true);
@@ -414,7 +420,18 @@ export const Admin: React.FC = () => {
       showToast('Pengaturan umum dan tema warna perpustakaan berhasil disimpan!');
     } catch (err: any) {
       console.error('[handleSaveSettings] Error:', err);
-      showToast('Gagal menyimpan pengaturan: ' + (err.message || 'Terjadi kesalahan.'), 'error');
+      let errorMsg = err?.message || 'Terjadi kesalahan sistem.';
+      try {
+        const parsed = JSON.parse(err.message);
+        if (parsed.error && (parsed.error.includes('permission-denied') || parsed.error.includes('insufficient permissions'))) {
+          errorMsg = 'Izin ditolak (permission-denied). Hanya akun admin resmi yang dapat menyimpan pengaturan.';
+        } else if (parsed.error) {
+          errorMsg = parsed.error;
+        }
+      } catch {
+        // Bukan error JSON
+      }
+      showToast(`Gagal menyimpan pengaturan: ${errorMsg}`, 'error');
     } finally {
       setActionLoading(false);
     }

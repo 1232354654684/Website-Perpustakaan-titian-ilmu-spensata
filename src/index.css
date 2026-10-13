@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+@keyframes indeterminate {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(300%); }
+}
+
 :root {
   --color-primary: #1b4332;
   --color-primary-dark: #122d21;
