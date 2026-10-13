@@ -30,6 +30,8 @@ import {
   Calendar,
   Monitor,
   Archive,
+  MapPin,
+  ExternalLink,
 } from 'lucide-react';
 import { useLibrary, BOOTSTRAP_ADMIN_EMAIL } from '../context/LibraryContext';
 import { uploadAndProcessPhoto, validateImageFile, ImageUploadResult, blobToBase64 } from '../lib/firebase';
@@ -37,6 +39,7 @@ import { NewsItem, SOPEntry, StaffMember, OperatingHours, ContactInfo, LibraryPr
 import { defaultMultimediaInfo, defaultClassSchedules } from '../data/libraryData';
 import { THEME_PRESETS, ColorThemeConfig, DEFAULT_THEME, buildCustomTheme, applyThemeToDOM } from '../lib/theme';
 import { BackupRestoreTab } from '../components/BackupRestoreTab';
+import { sanitizeMapsEmbedUrl, sanitizeMapsDirectUrl, DEFAULT_MAPS_EMBED_URL, DEFAULT_MAPS_DIRECT_URL } from '../lib/mapUtils';
 
 interface ConfirmDialogState {
   isOpen: boolean;
@@ -1885,6 +1888,115 @@ export const Admin: React.FC = () => {
                   onChange={(e) => setContactForm({ ...contactForm, youtube: e.target.value })}
                   className="w-full px-3 py-2 rounded-xl border border-[#E6DFD3] text-xs text-stone-900"
                 />
+              </div>
+            </div>
+
+            {/* Sub-Section: Pengaturan Peta Lokasi Google Maps */}
+            <div className="pt-4 border-t border-[#E6DFD3] space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <h4 className="text-sm font-bold text-stone-900 flex items-center gap-1.5 font-sans">
+                    <MapPin className="w-4 h-4 text-[#1B4332]" />
+                    <span>Integrasi Peta Lokasi Sekolah & Perpustakaan</span>
+                  </h4>
+                  <p className="text-xs text-stone-500 font-sans mt-0.5">
+                    Tentukan peta Google Maps interaktif yang disematkan pada halaman Kontak publik.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setContactForm({
+                      ...contactForm,
+                      mapsEmbedUrl: DEFAULT_MAPS_EMBED_URL,
+                      mapsDirectUrl: DEFAULT_MAPS_DIRECT_URL,
+                    });
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E6DFD3] bg-stone-50 hover:bg-stone-100 text-[11px] font-semibold text-stone-700 transition-colors cursor-pointer self-start sm:self-auto"
+                >
+                  <RefreshCw className="w-3 h-3 text-[#1B4332]" />
+                  <span>Reset ke Peta SMPN 1 Tambak</span>
+                </button>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-stone-700 flex items-center justify-between">
+                  <span>Link Embed Google Maps</span>
+                  <span className="text-[11px] font-normal text-stone-500">Mendukung format link src atau seluruh kode tag &lt;iframe&gt;</span>
+                </label>
+                <textarea
+                  rows={2}
+                  value={contactForm.mapsEmbedUrl || ''}
+                  onChange={(e) => {
+                    const rawVal = e.target.value;
+                    // Otomatis ekstrak jika admin menempel seluruh kode iframe
+                    const sanitized = sanitizeMapsEmbedUrl(rawVal);
+                    setContactForm({
+                      ...contactForm,
+                      mapsEmbedUrl: rawVal.includes('<iframe') ? sanitized : rawVal,
+                    });
+                  }}
+                  onBlur={(e) => {
+                    // Saat selesai mengetik / keluar dari kolom, rapikan otomatis
+                    const sanitized = sanitizeMapsEmbedUrl(e.target.value);
+                    setContactForm({ ...contactForm, mapsEmbedUrl: sanitized });
+                  }}
+                  placeholder="https://www.google.com/maps/embed?pb=..."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] text-xs font-mono text-stone-900 focus:ring-2 focus:ring-[#1B4332] focus:outline-none"
+                />
+                <p className="text-[11px] text-stone-500 leading-relaxed font-sans">
+                  💡 <strong>Petunjuk:</strong> Buka Google Maps, cari <strong>SMP Negeri 1 Tambak</strong>, klik <strong>Bagikan &gt; Sematkan peta</strong>, lalu salin link <code className="bg-stone-100 px-1 py-0.5 rounded font-mono text-stone-800">src</code> dari iframe. Jika Anda menempelkan seluruh kode &lt;iframe&gt;, sistem akan otomatis mengambil nilai link src-nya saja.
+                </p>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-stone-700 flex items-center justify-between">
+                  <span>Link Buka di Google Maps (Aplikasi / Tab Baru)</span>
+                  <span className="text-[11px] font-normal text-stone-500">URL untuk tombol navigasi HP</span>
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={contactForm.mapsDirectUrl || ''}
+                    onChange={(e) => setContactForm({ ...contactForm, mapsDirectUrl: e.target.value })}
+                    placeholder="https://www.google.com/maps/place/SMP+NEGERI+1+TAMBAK/..."
+                    className="flex-1 px-3.5 py-2 rounded-xl border border-[#E6DFD3] text-xs font-mono text-stone-900 focus:ring-2 focus:ring-[#1B4332] focus:outline-none"
+                  />
+                  <a
+                    href={sanitizeMapsDirectUrl(contactForm.mapsDirectUrl)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 px-3 py-2 rounded-xl border border-[#E6DFD3] bg-stone-50 hover:bg-stone-100 text-xs font-semibold text-stone-700 transition-colors shrink-0"
+                    title="Uji coba buka link peta di tab baru"
+                  >
+                    <span>Uji Link</span>
+                    <ExternalLink className="w-3.5 h-3.5 text-stone-500" />
+                  </a>
+                </div>
+              </div>
+
+              {/* Pratinjau Peta Mini di Admin */}
+              <div className="pt-2">
+                <div className="flex items-center justify-between pb-1.5 text-xs font-semibold text-stone-700">
+                  <span>Pratinjau Tampilan Peta:</span>
+                  <span className="text-[11px] font-normal text-emerald-700 font-sans flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                    Peta aktif & siap tampil di publik
+                  </span>
+                </div>
+                <div className="w-full h-56 rounded-2xl overflow-hidden border border-[#E6DFD3] bg-stone-100 relative">
+                  <iframe
+                    src={sanitizeMapsEmbedUrl(contactForm.mapsEmbedUrl)}
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0 }}
+                    allowFullScreen={false}
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                    title="Pratinjau Peta Lokasi SMP Negeri 1 Tambak"
+                    className="w-full h-full"
+                  />
+                </div>
               </div>
             </div>
           </div>

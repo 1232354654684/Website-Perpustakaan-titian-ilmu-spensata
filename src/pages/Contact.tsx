@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { PageHeader } from '../components/PageHeader';
 import { useLibrary } from '../context/LibraryContext';
+import { sanitizeMapsEmbedUrl } from '../lib/mapUtils';
 
 export const Contact: React.FC = () => {
   const { contactInfo, operatingHours } = useLibrary();
@@ -315,35 +316,22 @@ export const Contact: React.FC = () => {
 
       {/* Peta Lokasi Sekolah & Perpustakaan */}
       <section className="bg-[var(--color-surface)] rounded-3xl border border-[var(--color-border)] p-6 sm:p-10 shadow-xs space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <span className="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-widest">
-              Denah & Navigasi
-            </span>
-            <h3 className="font-serif text-2xl font-bold text-[var(--color-text)] mt-1">
-              Peta Lokasi SMP Negeri 1 Tambak
-            </h3>
-            <p className="text-xs text-[var(--color-text-muted)] mt-1">
-              Terletak strategis di jalur utama Kecamatan Tambak, Kabupaten Banyumas.
-            </p>
-          </div>
-
-          <a
-            href={contactInfo.mapsDirectUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] hover:bg-[var(--color-muted)] text-xs font-medium text-[var(--color-text)] transition-colors self-start sm:self-auto"
-          >
-            <MapPin className="w-3.5 h-3.5 text-[var(--color-primary)]" />
-            <span>Buka di Google Maps</span>
-            <ExternalLink className="w-3.5 h-3.5 text-[var(--color-text-muted)]" />
-          </a>
+        <div>
+          <span className="text-xs font-semibold text-[var(--color-primary)] uppercase tracking-widest">
+            Denah & Navigasi
+          </span>
+          <h3 className="font-serif text-2xl font-bold text-[var(--color-text)] mt-1">
+            Peta Lokasi SMP Negeri 1 Tambak
+          </h3>
+          <p className="text-xs text-[var(--color-text-muted)] mt-1">
+            Terletak strategis di jalur utama Kecamatan Tambak, Kabupaten Banyumas.
+          </p>
         </div>
 
         {/* Interactive Map Embed */}
-        <div className="w-full h-80 sm:h-96 rounded-2xl overflow-hidden border border-[var(--color-border)] relative bg-[var(--color-bg)]">
+        <div className="w-full h-80 sm:h-96 md:h-[420px] rounded-2xl overflow-hidden border border-[var(--color-border)] relative bg-[var(--color-bg)] shadow-inner">
           <iframe
-            src={contactInfo.mapsEmbedUrl}
+            src={sanitizeMapsEmbedUrl(contactInfo.mapsEmbedUrl)}
             width="100%"
             height="100%"
             style={{ border: 0 }}
@@ -351,8 +339,14 @@ export const Contact: React.FC = () => {
             loading="lazy"
             referrerPolicy="no-referrer"
             title="Peta Lokasi SMP Negeri 1 Tambak"
-            className="w-full h-full grayscale-[20%]"
+            className="w-full h-full"
           />
+        </div>
+
+        {/* Keterangan Lokasi di Bawah Peta */}
+        <div className="pt-3 flex items-center gap-2 text-xs text-[var(--color-text-muted)] border-t border-[var(--color-border)]">
+          <MapPin className="w-4 h-4 text-[var(--color-primary)] shrink-0" />
+          <span>SMP Negeri 1 Tambak · Jl. Watuagung, Kamulyan, Kec. Tambak, Kab. Banyumas 53196</span>
         </div>
       </section>
     </div>

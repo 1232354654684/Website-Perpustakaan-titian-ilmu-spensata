@@ -470,6 +470,7 @@ export const contactInfoData: ContactInfo = {
   instagram: 'https://instagram.com/smpn1tambak_official',
   youtube: 'https://youtube.com/@smpn1tambak',
   mapsEmbedUrl:
-    'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d15822.476483471018!2d109.4002!3d-7.6162!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e654eb61f000001%3A0x8cf5796a5b78!2sTambak%2C%20Banyumas%20Regency%2C%20Central%20Java!5e0!3m2!1sen!2sid!4v1710000000000!5m2!1sen!2sid',
-  mapsDirectUrl: 'https://maps.google.com/?q=SMP+Negeri+1+Tambak+Banyumas'
+    'https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3954.2755866768393!2d109.42851427499694!3d-7.652193892364024!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e656ed611f71585%3A0x8544d6a1b24f5a3!2sSMP%20NEGERI%201%20TAMBAK!5e0!3m2!1sid!2sid!4v1718000000000!5m2!1sid!2sid',
+  mapsDirectUrl:
+    'https://www.google.com/maps/place/SMP+NEGERI+1+TAMBAK/@-7.6521992,109.4310892,17z/data=!3m1!4b1!4m6!3m5!1s0x2e656ed611f71585:0x8544d6a1b24f5a3!8m2!3d-7.6521992!4d109.4310892!16s%2Fg%2F11b6_c2c1w'
 };

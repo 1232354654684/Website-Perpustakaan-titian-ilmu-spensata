@@ -24,6 +24,7 @@ import {
   staffData as defaultStaff,
 } from '../data/libraryData';
 import { applyThemeToDOM, DEFAULT_THEME, resolveTheme, loadCachedTheme, ColorThemeConfig } from '../lib/theme';
+import { sanitizeMapsEmbedUrl, sanitizeMapsDirectUrl } from '../lib/mapUtils';
 
 export const BOOTSTRAP_ADMIN_EMAIL = 'roni.ardiansyah57@guru.smk.belajar.id';
 
@@ -307,7 +308,16 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
           } else {
             setOperatingHours(defaultHours);
           }
-          if (data.contactInfo) setContactInfo(data.contactInfo);
+          if (data.contactInfo) {
+            setContactInfo({
+              ...defaultContact,
+              ...data.contactInfo,
+              mapsEmbedUrl: sanitizeMapsEmbedUrl(data.contactInfo.mapsEmbedUrl),
+              mapsDirectUrl: sanitizeMapsDirectUrl(data.contactInfo.mapsDirectUrl),
+            });
+          } else {
+            setContactInfo(defaultContact);
+          }
         } else {
           // Dokumen pengaturan umum belum ada di Firestore -> gunakan tema default hijau
           applyThemeToDOM(DEFAULT_THEME);
@@ -500,6 +510,11 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
         ...profile,
         colorTheme: cleanTheme,
       };
+      const cleanContact: ContactInfo = {
+        ...contact,
+        mapsEmbedUrl: sanitizeMapsEmbedUrl(contact.mapsEmbedUrl),
+        mapsDirectUrl: sanitizeMapsDirectUrl(contact.mapsDirectUrl),
+      };
       await setDoc(
         doc(db, 'settings', 'general'),
         {
@@ -507,7 +522,7 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
           homeStats: profile.homeStats || [],
           colorTheme: cleanTheme,
           operatingHours: hours,
-          contactInfo: contact,
+          contactInfo: cleanContact,
           updatedAt: new Date().toISOString(),
         },
         { merge: true }
@@ -515,7 +530,7 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
       applyThemeToDOM(cleanTheme);
       setSettings(cleanProfile);
       setOperatingHours(hours);
-      setContactInfo(contact);
+      setContactInfo(cleanContact);
     } catch (err) {
       handleFirestoreError(err, OperationType.WRITE, path);
     }
