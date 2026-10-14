@@ -7,6 +7,7 @@ export interface LibraryProfile {
   schoolName: string;
   npsn: string;
   accreditation: string;
+  npp?: string;
   about: string;
   history: string;
   vision: string;

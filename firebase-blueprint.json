@@ -27,6 +27,7 @@
         "schoolName": { "type": "string" },
         "npsn": { "type": "string" },
         "accreditation": { "type": "string" },
+        "npp": { "type": "string" },
         "about": { "type": "string" },
         "history": { "type": "string" },
         "vision": { "type": "string" },

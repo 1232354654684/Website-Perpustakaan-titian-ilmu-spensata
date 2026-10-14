@@ -6,7 +6,6 @@ import {
   Clock,
   Compass,
   FileText,
-  MapPin,
   Sparkles,
   Users,
   CheckCircle2,
@@ -97,21 +96,25 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
             </div>
 
             {/* Micro Trust Indicators with neutral placeholders */}
-            <div className="pt-4 flex flex-wrap items-center gap-y-2 gap-x-5 text-xs text-[var(--color-text-muted)] font-sans border-t border-[var(--color-border)]">
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-[var(--color-primary)]" />
+            <div className="pt-4 flex flex-wrap items-center gap-y-2 gap-x-3.5 sm:gap-x-5 text-xs text-[var(--color-text-muted)] font-sans border-t border-[var(--color-border)]">
+              <div className="flex items-center gap-1.5 shrink-0">
+                <CheckCircle2 className="w-4 h-4 text-[var(--color-primary)] shrink-0" />
                 <span>NPSN: {settings.npsn || '-'}</span>
               </div>
-              <span className="text-stone-300">·</span>
-              <div className="flex items-center gap-1.5">
-                <CheckCircle2 className="w-4 h-4 text-[var(--color-primary)]" />
+              <span className="text-stone-300 select-none">·</span>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <CheckCircle2 className="w-4 h-4 text-[var(--color-primary)] shrink-0" />
                 <span>Akreditasi: {settings.accreditation || '-'}</span>
               </div>
-              <span className="text-stone-300">·</span>
-              <div className="flex items-center gap-1.5">
-                <MapPin className="w-4 h-4 text-[var(--color-primary)]" />
-                <span>Kecamatan Tambak, Banyumas</span>
-              </div>
+              {settings.npp && settings.npp.trim() !== '' && (
+                <>
+                  <span className="text-stone-300 select-none hidden sm:inline">·</span>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <CheckCircle2 className="w-4 h-4 text-[var(--color-primary)] shrink-0" />
+                    <span>NPP: {settings.npp.trim()}</span>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 

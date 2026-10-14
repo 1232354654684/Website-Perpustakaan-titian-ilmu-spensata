@@ -1262,6 +1262,17 @@ export const Admin: React.FC = () => {
                   className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] text-xs sm:text-sm text-stone-900 focus:ring-2 focus:ring-[#1B4332] focus:outline-none"
                 />
               </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs font-semibold text-stone-700">Nomor Pokok Perpustakaan (NPP)</label>
+                <input
+                  type="text"
+                  value={profileForm.npp || ''}
+                  onChange={(e) => setProfileForm({ ...profileForm, npp: e.target.value })}
+                  placeholder="Contoh: 3302091D1000001 (Kosongkan jika belum ada)"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] text-xs sm:text-sm text-stone-900 focus:ring-2 focus:ring-[#1B4332] focus:outline-none"
+                />
+              </div>
             </div>
 
             <div className="space-y-1.5">

@@ -31,6 +31,7 @@ export const libraryProfileData: LibraryProfile = {
   schoolName: 'SMP Negeri 1 Tambak',
   npsn: '-',
   accreditation: '-',
+  npp: '',
   about:
     'Perpustakaan "Titian Ilmu" SMP Negeri 1 Tambak merupakan pusat sumber belajar, sarana literasi informasi, dan wahana rekreasi edukatif bagi seluruh warga sekolah. Berkomitmen mewujudkan generasi pembelajar yang cerdas, berkarakter luhur, dan berwawasan luas melalui penyediaan koleksi pustaka berkualitas serta pelayanan prima berorientasi pemustaka.',
   history:
