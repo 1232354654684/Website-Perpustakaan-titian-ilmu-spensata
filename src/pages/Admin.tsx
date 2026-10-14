@@ -32,11 +32,16 @@ import {
   Archive,
   MapPin,
   ExternalLink,
+  Search,
+  Bookmark,
+  UserPlus,
+  RotateCcw,
+  Compass,
 } from 'lucide-react';
 import { useLibrary, BOOTSTRAP_ADMIN_EMAIL } from '../context/LibraryContext';
 import { uploadAndProcessPhoto, validateImageFile, ImageUploadResult, blobToBase64 } from '../lib/firebase';
-import { NewsItem, SOPEntry, StaffMember, OperatingHours, ContactInfo, LibraryProfile, HomeStatItem, ClassScheduleItem } from '../types';
-import { defaultMultimediaInfo, defaultClassSchedules } from '../data/libraryData';
+import { NewsItem, SOPEntry, StaffMember, OperatingHours, ContactInfo, LibraryProfile, HomeStatItem, ClassScheduleItem, QuickServicesConfig } from '../types';
+import { defaultMultimediaInfo, defaultClassSchedules, defaultQuickServices, DEFAULT_QUICK_SERVICE_URL } from '../data/libraryData';
 import { THEME_PRESETS, ColorThemeConfig, DEFAULT_THEME, buildCustomTheme, applyThemeToDOM } from '../lib/theme';
 import { BackupRestoreTab } from '../components/BackupRestoreTab';
 import { sanitizeMapsEmbedUrl, sanitizeMapsDirectUrl, DEFAULT_MAPS_EMBED_URL, DEFAULT_MAPS_DIRECT_URL } from '../lib/mapUtils';
@@ -1361,6 +1366,118 @@ export const Admin: React.FC = () => {
                 placeholder="Menyediakan ragam bahan pustaka terkurasi, ruang baca berpenyejuk udara, otomasi katalog pencarian judul, serta selasar hijau ramah anak."
                 className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] text-xs sm:text-sm text-stone-900 focus:ring-2 focus:ring-[#1B4332] focus:outline-none"
               />
+            </div>
+          </div>
+
+          {/* Section: Layanan Cepat Beranda */}
+          <div className="bg-white rounded-3xl border border-[#E6DFD3] p-6 sm:p-8 space-y-5 shadow-xs">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#E6DFD3] pb-3">
+              <div>
+                <h3 className="font-serif text-xl font-bold text-stone-900 flex items-center gap-2">
+                  <Compass className="w-5 h-5 text-[#1B4332]" />
+                  <span>Tautan Layanan Cepat Beranda</span>
+                </h3>
+                <p className="text-xs text-stone-500 font-sans mt-0.5">
+                  Atur URL tujuan untuk tiga kartu pintasan layanan di Beranda publik (katalog OPAC / INLISLite). Jika salah satu kolom dikosongkan, kartu tersebut akan otomatis disembunyikan dari tampilan publik.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setProfileForm({
+                    ...profileForm,
+                    quickServices: { ...defaultQuickServices },
+                  });
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-[#E6DFD3] bg-stone-50 hover:bg-stone-100 text-[11px] font-semibold text-stone-700 transition-colors cursor-pointer self-start sm:self-auto"
+                title="Kembalikan semua URL ke tautan bawaan INLISLite"
+              >
+                <RotateCcw className="w-3.5 h-3.5 text-stone-500" />
+                <span>Reset ke Default</span>
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-emerald-50 text-[#1B4332] flex items-center justify-center shrink-0">
+                    <Search className="w-3.5 h-3.5" />
+                  </div>
+                  <label className="text-xs font-semibold text-stone-700">URL Cari Buku</label>
+                </div>
+                <input
+                  type="text"
+                  value={profileForm.quickServices?.searchBookUrl ?? ''}
+                  onChange={(e) =>
+                    setProfileForm({
+                      ...profileForm,
+                      quickServices: {
+                        ...(profileForm.quickServices || defaultQuickServices),
+                        searchBookUrl: e.target.value,
+                      },
+                    })
+                  }
+                  placeholder={DEFAULT_QUICK_SERVICE_URL}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] text-xs font-mono text-stone-900 focus:ring-2 focus:ring-[#1B4332] focus:outline-none"
+                />
+                <p className="text-[11px] text-stone-500 leading-relaxed font-sans">
+                  Kartu "Cari Buku" (ikon kaca pembesar) · Kosongkan untuk menyembunyikan.
+                </p>
+              </div>
+
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-emerald-50 text-[#1B4332] flex items-center justify-center shrink-0">
+                    <Bookmark className="w-3.5 h-3.5" />
+                  </div>
+                  <label className="text-xs font-semibold text-stone-700">URL Reservasi Buku</label>
+                </div>
+                <input
+                  type="text"
+                  value={profileForm.quickServices?.reserveBookUrl ?? ''}
+                  onChange={(e) =>
+                    setProfileForm({
+                      ...profileForm,
+                      quickServices: {
+                        ...(profileForm.quickServices || defaultQuickServices),
+                        reserveBookUrl: e.target.value,
+                      },
+                    })
+                  }
+                  placeholder={DEFAULT_QUICK_SERVICE_URL}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] text-xs font-mono text-stone-900 focus:ring-2 focus:ring-[#1B4332] focus:outline-none"
+                />
+                <p className="text-[11px] text-stone-500 leading-relaxed font-sans">
+                  Kartu "Reservasi Buku" (ikon penanda buku) · Kosongkan untuk menyembunyikan.
+                </p>
+              </div>
+
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-emerald-50 text-[#1B4332] flex items-center justify-center shrink-0">
+                    <UserPlus className="w-3.5 h-3.5" />
+                  </div>
+                  <label className="text-xs font-semibold text-stone-700">URL Pendaftaran Anggota</label>
+                </div>
+                <input
+                  type="text"
+                  value={profileForm.quickServices?.memberRegisterUrl ?? ''}
+                  onChange={(e) =>
+                    setProfileForm({
+                      ...profileForm,
+                      quickServices: {
+                        ...(profileForm.quickServices || defaultQuickServices),
+                        memberRegisterUrl: e.target.value,
+                      },
+                    })
+                  }
+                  placeholder={DEFAULT_QUICK_SERVICE_URL}
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-[#E6DFD3] text-xs font-mono text-stone-900 focus:ring-2 focus:ring-[#1B4332] focus:outline-none"
+                />
+                <p className="text-[11px] text-stone-500 leading-relaxed font-sans">
+                  Kartu "Daftar Anggota" (ikon user-plus) · Kosongkan untuk menyembunyikan.
+                </p>
+              </div>
             </div>
           </div>
 

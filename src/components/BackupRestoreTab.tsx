@@ -917,7 +917,7 @@ export const BackupRestoreTab: React.FC<BackupRestoreTabProps> = ({ onShowToast 
                   <div className="text-[11px] text-stone-600 space-y-1 bg-stone-50/70 p-2.5 rounded-lg border border-stone-200">
                     <p className="font-semibold text-stone-700">Rincian Dokumen:</p>
                     <div className="grid grid-cols-2 gap-x-2 gap-y-0.5">
-                      <span>• Pengaturan &amp; Link Peta: <strong>{restorePreview.collectionsCount.settings}</strong></span>
+                      <span>• Pengaturan &amp; Layanan Cepat: <strong>{restorePreview.collectionsCount.settings}</strong></span>
                       <span>• Berita: <strong>{restorePreview.collectionsCount.news}</strong></span>
                       <span>• SOP Pelayanan: <strong>{restorePreview.collectionsCount.sop}</strong></span>
                       <span>• Struktur Organisasi: <strong>{restorePreview.collectionsCount.staff}</strong></span>

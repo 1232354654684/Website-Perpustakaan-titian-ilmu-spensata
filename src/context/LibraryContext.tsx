@@ -22,6 +22,8 @@ import {
   newsData as defaultNews,
   sopData as defaultSOP,
   staffData as defaultStaff,
+  defaultQuickServices,
+  DEFAULT_QUICK_SERVICE_URL,
 } from '../data/libraryData';
 import { applyThemeToDOM, DEFAULT_THEME, resolveTheme, loadCachedTheme, ColorThemeConfig } from '../lib/theme';
 import { sanitizeMapsEmbedUrl, sanitizeMapsDirectUrl } from '../lib/mapUtils';
@@ -286,6 +288,21 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
                 ? data.profile.goals
                 : defaultProfile.goals || [];
 
+            const defaultQS = defaultProfile.quickServices || defaultQuickServices;
+            const rawQS = data.profile.quickServices || data.quickServices;
+            const resolvedQuickServices = rawQS
+              ? {
+                  searchBookUrl:
+                    rawQS.searchBookUrl !== undefined ? rawQS.searchBookUrl : defaultQS.searchBookUrl,
+                  reserveBookUrl:
+                    rawQS.reserveBookUrl !== undefined ? rawQS.reserveBookUrl : defaultQS.reserveBookUrl,
+                  memberRegisterUrl:
+                    rawQS.memberRegisterUrl !== undefined
+                      ? rawQS.memberRegisterUrl
+                      : defaultQS.memberRegisterUrl,
+                }
+              : defaultQS;
+
             setSettings({
               ...defaultProfile,
               ...data.profile,
@@ -295,11 +312,13 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
               multimediaInfo: resolvedMultimedia,
               missions: resolvedMissions,
               goals: resolvedGoals,
+              quickServices: resolvedQuickServices,
             });
           } else {
             setSettings((prev) => ({
               ...prev,
               colorTheme: resolvedTheme,
+              quickServices: defaultProfile.quickServices || defaultQuickServices,
             }));
           }
 
@@ -504,9 +523,11 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
     const path = 'settings/general';
     try {
       const cleanTheme = resolveTheme(profile.colorTheme);
-      const cleanProfile = {
+      const cleanQuickServices = profile.quickServices || defaultQuickServices;
+      const cleanProfile: LibraryProfile = {
         ...profile,
         colorTheme: cleanTheme,
+        quickServices: cleanQuickServices,
       };
       const cleanContact: ContactInfo = {
         ...contact,
@@ -517,6 +538,7 @@ export const LibraryProvider: React.FC<{ children: React.ReactNode }> = ({ child
         doc(db, 'settings', 'general'),
         {
           profile: cleanProfile,
+          quickServices: cleanQuickServices,
           homeStats: profile.homeStats || [],
           colorTheme: cleanTheme,
           operatingHours: hours,

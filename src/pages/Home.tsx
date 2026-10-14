@@ -3,27 +3,69 @@ import {
   ArrowRight,
   BookOpen,
   Calendar,
-  Clock,
   Compass,
   FileText,
   Sparkles,
   Users,
   CheckCircle2,
   BookmarkCheck,
-  ChevronRight,
+  Search,
+  Bookmark,
+  UserPlus,
+  ExternalLink,
 } from 'lucide-react';
 import { useLibrary } from '../context/LibraryContext';
 import { NewsItem } from '../types';
 import { VisualFallback } from '../components/VisualFallback';
+import { DEFAULT_QUICK_SERVICE_URL } from '../data/libraryData';
 
 interface HomeProps {
   onNavigate: (page: string, articleId?: string) => void;
 }
 
 export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
-  const { settings, operatingHours, newsList, loading } = useLibrary();
+  const { settings, newsList } = useLibrary();
   const latestNews = newsList.slice(0, 3);
   const homeStats = settings.homeStats || [];
+
+  // Layanan Cepat (OPAC / INLISLite)
+  const defaultUrl = DEFAULT_QUICK_SERVICE_URL;
+  const rawSearchUrl =
+    settings.quickServices?.searchBookUrl !== undefined
+      ? settings.quickServices.searchBookUrl
+      : defaultUrl;
+  const rawReserveUrl =
+    settings.quickServices?.reserveBookUrl !== undefined
+      ? settings.quickServices.reserveBookUrl
+      : defaultUrl;
+  const rawRegisterUrl =
+    settings.quickServices?.memberRegisterUrl !== undefined
+      ? settings.quickServices.memberRegisterUrl
+      : defaultUrl;
+
+  const quickServicesList = [
+    {
+      id: 'search',
+      title: 'Cari Buku',
+      description: 'Telusuri koleksi perpustakaan',
+      icon: Search,
+      url: (rawSearchUrl || '').trim(),
+    },
+    {
+      id: 'reserve',
+      title: 'Reservasi Buku',
+      description: 'Pesan buku secara mandiri',
+      icon: Bookmark,
+      url: (rawReserveUrl || '').trim(),
+    },
+    {
+      id: 'register',
+      title: 'Daftar Anggota',
+      description: 'Daftar jadi anggota perpustakaan',
+      icon: UserPlus,
+      url: (rawRegisterUrl || '').trim(),
+    },
+  ].filter((item) => item.url.length > 0);
 
   const highlights = [
     {
@@ -49,7 +91,7 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
   ];
 
   return (
-    <div className="space-y-24">
+    <div className="space-y-16 sm:space-y-20 lg:space-y-24">
       {/* Hero Section */}
       <section className="pt-4 sm:pt-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-10 items-stretch">
@@ -125,72 +167,61 @@ export const Home: React.FC<HomeProps> = ({ onNavigate }) => {
         </div>
       </section>
 
-      {/* Operational Hours Ribbon (Info Jam Layanan) */}
-      <section className="bg-[var(--color-surface)] rounded-2xl border border-[var(--color-border)] p-6 sm:p-8 shadow-xs">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-[var(--color-border)]">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[var(--color-primary-soft)] text-[var(--color-primary)] flex items-center justify-center shrink-0">
-              <Clock className="w-5 h-5 text-[var(--color-primary)]" />
+      {/* Strip Layanan Cepat */}
+      {quickServicesList.length > 0 && (
+        <section
+          className="-mt-10 sm:-mt-14 relative z-10"
+          aria-label="Layanan Cepat Perpustakaan"
+        >
+          <div className="bg-[var(--color-surface)]/95 backdrop-blur-xs rounded-2xl sm:rounded-3xl border border-[var(--color-border)] p-4 sm:p-6 shadow-sm">
+            <div
+              className={`grid grid-cols-1 ${
+                quickServicesList.length === 2
+                  ? 'sm:grid-cols-2'
+                  : quickServicesList.length >= 3
+                  ? 'md:grid-cols-3'
+                  : 'grid-cols-1'
+              } gap-3.5 sm:gap-4 lg:gap-5`}
+            >
+              {quickServicesList.map((item) => {
+                const IconComponent = item.icon;
+                return (
+                  <a
+                    key={item.id}
+                    href={item.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group flex items-center justify-between p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] hover:bg-[var(--color-surface)] hover:border-[var(--color-primary)] transition-all duration-200 hover:-translate-y-1 hover:shadow-md cursor-pointer min-h-[72px]"
+                  >
+                    <div className="flex items-center gap-3.5 sm:gap-4 min-w-0 pr-2">
+                      <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-[var(--color-primary-soft)] text-[var(--color-primary)] flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105">
+                        <IconComponent className="w-5 h-5 sm:w-6 sm:h-6 text-[var(--color-primary)]" />
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="font-serif font-bold text-base sm:text-lg text-[var(--color-text)] group-hover:text-[var(--color-primary)] transition-colors truncate">
+                          {item.title}
+                        </h3>
+                        <p className="text-xs text-[var(--color-text-muted)] mt-0.5 line-clamp-1 sm:line-clamp-2 leading-relaxed">
+                          {item.description}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="w-8 h-8 rounded-lg bg-[var(--color-muted)]/50 group-hover:bg-[var(--color-primary-soft)] text-[var(--color-text-muted)] group-hover:text-[var(--color-primary)] flex items-center justify-center shrink-0 transition-all duration-200 group-hover:translate-x-0.5 group-hover:-translate-y-0.5">
+                      <ExternalLink className="w-4 h-4" />
+                    </div>
+                  </a>
+                );
+              })}
             </div>
-            <div>
-              <h3 className="font-serif text-lg font-bold text-[var(--color-text)]">
-                Informasi Jam Layanan Pemustaka
-              </h3>
-              <p className="text-xs text-[var(--color-text-muted)]">
-                {operatingHours.filter((h) => h.isOpen).map((h) => h.dayRange).join(', ') || 'Senin – Jumat'} · Sabtu, Minggu, dan libur sekolah tutup.
+            <div className="mt-4 pt-3.5 border-t border-[var(--color-border)]/70 text-center">
+              <p className="text-xs text-[var(--color-text-muted)] flex items-center justify-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-primary)]/70 shrink-0 inline-block" />
+                <span>Layanan katalog online tersedia pada jam layanan perpustakaan.</span>
               </p>
             </div>
           </div>
-          <button
-            onClick={() => onNavigate('sop')}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-[var(--color-primary)] hover:text-[var(--color-primary-dark)] transition-colors self-start md:self-auto cursor-pointer"
-          >
-            <span>Panduan SOP Peminjaman</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-6">
-          {operatingHours.map((slot, index) => (
-            <div
-              key={index}
-              className={`p-4 rounded-xl border transition-colors ${
-                slot.isOpen
-                  ? 'bg-[var(--color-bg)] border-[var(--color-border)]'
-                  : 'bg-[var(--color-muted)]/40 border-[var(--color-border)]'
-              }`}
-            >
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-[var(--color-text)] uppercase tracking-wide">
-                  {slot.dayRange}
-                </span>
-                <span
-                  className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                    slot.isOpen
-                      ? 'bg-emerald-100 text-emerald-800'
-                      : 'bg-rose-100 text-rose-800'
-                  }`}
-                >
-                  {slot.isOpen ? 'Buka' : 'Tutup'}
-                </span>
-              </div>
-              <p className="font-mono text-base font-bold text-[var(--color-text)]">
-                {slot.hours}
-              </p>
-              {slot.breakTime && (
-                <p className="text-[11px] text-[var(--color-text-muted)] mt-1">
-                  {slot.breakTime}
-                </p>
-              )}
-              {slot.notes && (
-                <p className="text-[11px] text-[var(--color-text-muted)] mt-1 italic">
-                  {slot.notes}
-                </p>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Ringkasan Singkat Profil & Nilai Keunggulan */}
       <section className="space-y-12">

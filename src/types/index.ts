@@ -25,6 +25,13 @@ export interface LibraryProfile {
   colorTheme?: ColorThemeConfig;
   classSchedules?: ClassScheduleItem[];
   multimediaInfo?: MultimediaInfo;
+  quickServices?: QuickServicesConfig;
+}
+
+export interface QuickServicesConfig {
+  searchBookUrl?: string;
+  reserveBookUrl?: string;
+  memberRegisterUrl?: string;
 }
 
 export interface ClassScheduleItem {

@@ -1,5 +1,13 @@
-import { ContactInfo, LibraryProfile, NewsItem, OperatingHours, SOPEntry, StaffMember, HomeStatItem } from '../types';
+import { ContactInfo, LibraryProfile, NewsItem, OperatingHours, SOPEntry, StaffMember, HomeStatItem, QuickServicesConfig } from '../types';
 import { DEFAULT_THEME } from '../lib/theme';
+
+export const DEFAULT_QUICK_SERVICE_URL = 'https://inlislite.spensata.sch.id/inlislite3/';
+
+export const defaultQuickServices: QuickServicesConfig = {
+  searchBookUrl: DEFAULT_QUICK_SERVICE_URL,
+  reserveBookUrl: DEFAULT_QUICK_SERVICE_URL,
+  memberRegisterUrl: DEFAULT_QUICK_SERVICE_URL,
+};
 
 export const defaultHomeStatsData: HomeStatItem[] = [
   { id: 'stat-1', label: 'Total Koleksi Buku', value: '8.450', suffix: '+', unit: 'Eksemplar' },
@@ -62,7 +70,8 @@ export const libraryProfileData: LibraryProfile = {
   heroVisualDescription: 'Menyediakan ragam bahan pustaka terkurasi, ruang baca berpenyejuk udara, otomasi katalog pencarian judul, serta selasar hijau ramah anak.',
   colorTheme: DEFAULT_THEME,
   classSchedules: defaultClassSchedules,
-  multimediaInfo: defaultMultimediaInfo
+  multimediaInfo: defaultMultimediaInfo,
+  quickServices: defaultQuickServices,
 };
 
 export const operatingHoursData: OperatingHours[] = [

@@ -82,35 +82,6 @@ export const SOP: React.FC = () => {
         description="Pedoman alur layanan resmi Perpustakaan Titian Ilmu SMP Negeri 1 Tambak guna menjamin kepastian, ketertiban, dan transparansi pelayanan bagi seluruh pemustaka."
       />
 
-      {/* Hero Banner: Tombol OPAC Katalog Online & Quick Summary */}
-      <section className="bg-[var(--color-surface)] rounded-3xl border border-[var(--color-border)] p-6 sm:p-8 lg:p-10 shadow-xs flex flex-col lg:flex-row items-center justify-between gap-6">
-        <div className="space-y-2 text-center lg:text-left max-w-2xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[var(--color-primary-soft)] text-[var(--color-primary)] text-xs font-semibold">
-            <Search className="w-3.5 h-3.5" />
-            <span>Katalog Otomasi Inlislite V3</span>
-          </div>
-          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-[var(--color-text)]">
-            Cari & Reservasi Buku Secara Mandiri
-          </h2>
-          <p className="text-xs sm:text-sm text-[var(--color-text-muted)] leading-relaxed font-sans">
-            Temukan judul buku, pengarang, nomor rak, serta ketersediaan stok bahan pustaka secara real-time melalui sistem OPAC Perpustakaan Titian Ilmu.
-          </p>
-        </div>
-
-        <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0 w-full lg:w-auto">
-          <a
-            href="https://inlislite.spensata.sch.id/inlislite3/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-6 py-3.5 rounded-xl bg-[var(--color-primary)] text-white text-xs sm:text-sm font-bold hover:bg-[var(--color-primary-dark)] transition-all shadow-xs hover:shadow-md cursor-pointer"
-          >
-            <Search className="w-4 h-4" />
-            <span>Cari Buku di Katalog Online (OPAC)</span>
-            <ExternalLink className="w-4 h-4 ml-0.5 opacity-80" />
-          </a>
-        </div>
-      </section>
-
       {/* Bagian: JADWAL PEMINJAMAN DAN PENGEMBALIAN PER KELAS */}
       <section className="bg-[var(--color-surface)] rounded-3xl border border-[var(--color-border)] p-6 sm:p-8 lg:p-10 shadow-xs space-y-6">
         <div className="pb-4 border-b border-[var(--color-border)]">
@@ -385,7 +356,7 @@ export const SOP: React.FC = () => {
                           </p>
                         </div>
                         <a
-                          href="https://inlislite.spensata.sch.id/inlislite3/"
+                          href={settings.quickServices?.searchBookUrl || "https://inlislite.spensata.sch.id/inlislite3/"}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="px-4 py-2 rounded-lg bg-[var(--color-primary)] text-white text-xs font-bold hover:bg-[var(--color-primary-dark)] transition-colors inline-flex items-center gap-1.5 shrink-0 cursor-pointer shadow-2xs"
